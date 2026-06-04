@@ -19,10 +19,12 @@
   --color-info:          #0284C7;
   --color-info-light:    #F0F9FF;
 
-  --color-surface:       #F8FAFC;
-  --color-border:        #E2E8F0;
-  --color-text:          #1E293B;
-  --color-text-muted:    #64748B;
+  --color-surface:       #F9FAFB;
+  --color-border:        #F3F4F6;
+  --color-border-strong: #E5E7EB;
+  --color-text:          #111827;
+  --color-text-muted:    #6B7280;
+  --color-text-subtle:   #9CA3AF;
   --color-white:         #FFFFFF;
 
   --font-family:         'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -30,9 +32,9 @@
   --radius-md:           0.75rem;
   --radius-lg:           1rem;
 
-  --shadow-sm:  0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
-  --shadow-md:  0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
-  --shadow-lg:  0 10px 15px rgba(0,0,0,0.08), 0 4px 6px rgba(0,0,0,0.05);
+  --shadow-sm:  0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:  0 1px 4px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04);
+  --shadow-lg:  0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
 
   /* Bootstrap overrides */
   --bs-primary:          #0D9488;
@@ -95,35 +97,59 @@ body {
 }
 
 /* ============================================================
-   NAVBAR
+   NAVBAR — clean white
    ============================================================ */
-.navbar {
-  background: linear-gradient(90deg, var(--color-primary-dark), var(--color-primary)) !important;
-  box-shadow: var(--shadow-md);
+.cs-navbar {
+  background: var(--color-white) !important;
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: 0 1px 0 rgba(0,0,0,0.04);
   z-index: 1030;
-  padding: 0.625rem 1.25rem;
+  padding: 0 1.25rem;
+  min-height: 60px;
 }
 
-.navbar-brand img {
-  filter: brightness(0) invert(1);
+.cs-navbar .navbar-brand {
+  color: var(--color-text) !important;
 }
 
-.navbar-brand span {
+.cs-navbar .navbar-brand img {
+  filter: none;
+  opacity: 0.9;
+}
+
+.cs-navbar .navbar-brand span {
   font-weight: 700;
   letter-spacing: -0.02em;
-  font-size: 1.125rem;
+  font-size: 1.0625rem;
+  color: var(--color-primary);
 }
 
-.navbar .nav-link {
+.cs-navbar .nav-link {
   font-size: 0.875rem;
   font-weight: 500;
   padding: 0.4rem 0.75rem;
   border-radius: var(--radius-sm);
-  transition: background-color 0.15s ease;
+  color: var(--color-text-muted) !important;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
-.navbar .nav-link:hover {
-  background-color: rgba(255,255,255,0.12);
+.cs-navbar .nav-link:hover,
+.cs-navbar .nav-link.active {
+  background-color: var(--color-surface) !important;
+  color: var(--color-text) !important;
+}
+
+.cs-navbar .navbar-toggler {
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.cs-navbar .dropdown-toggle {
+  color: var(--color-text-muted) !important;
+}
+
+.cs-navbar .navbar-toggler-icon {
+  filter: invert(0.4);
 }
 
 /* ============================================================
@@ -181,11 +207,12 @@ footer {
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
   margin-bottom: 1.5rem;
-  transition: box-shadow 0.2s ease, transform 0.15s ease;
+  transition: box-shadow 0.2s ease;
 }
 
 .card:hover {
   box-shadow: var(--shadow-md);
+  border-color: var(--color-border-strong);
 }
 
 .card-header {
@@ -196,6 +223,7 @@ footer {
   background-color: var(--color-white);
   font-weight: 600;
   font-size: 0.9375rem;
+  color: var(--color-text);
 }
 
 .card-body {
@@ -206,32 +234,36 @@ footer {
    INFO BOXES
    ============================================================ */
 .info-box {
-  background-color: var(--color-info-light);
-  border-left: 4px solid var(--color-info);
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-info);
   padding: 1rem 1.25rem;
   margin-bottom: 1.5rem;
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
 
 .success-box {
-  background-color: var(--color-success-light);
-  border-left: 4px solid var(--color-success);
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-success);
   padding: 1rem 1.25rem;
   margin-bottom: 1rem;
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
 
 .warning-box {
-  background-color: var(--color-warning-light);
-  border-left: 4px solid var(--color-warning);
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-warning);
   padding: 1rem 1.25rem;
   margin-bottom: 1rem;
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
 
 .error-box {
-  background-color: var(--color-danger-light);
-  border-left: 4px solid var(--color-danger);
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-danger);
   padding: 1rem 1.25rem;
   margin-bottom: 1rem;
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
@@ -336,18 +368,7 @@ footer {
   font-size: 0.8rem;
 }
 
-/* ============================================================
-   API STATUS
-   ============================================================ */
-#api-status-indicator {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem 0.625rem;
-  border-radius: 2rem;
-  font-size: 0.8rem;
-  font-weight: 500;
-  background-color: rgba(255,255,255,0.1);
-}
+/* (api-status-indicator moved to dark-mode-toggle section) */
 
 /* ============================================================
    VARIABLE SELECTOR
@@ -894,7 +915,7 @@ body {
 #dark-mode-toggle {
   background: none;
   border: none;
-  color: rgba(255,255,255,0.85);
+  color: var(--color-text-muted);
   padding: 0.4rem 0.75rem;
   border-radius: var(--radius-sm);
   cursor: pointer;
@@ -903,8 +924,23 @@ body {
   line-height: 1;
 }
 #dark-mode-toggle:hover {
-  background-color: rgba(255,255,255,0.12);
-  color: white;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+}
+
+/* ============================================================
+   API STATUS INDICATOR (adapted for white navbar)
+   ============================================================ */
+#api-status-indicator {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  border-radius: 2rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
 }
 
 /* ============================================================
@@ -924,6 +960,46 @@ body {
 }
 
 [data-theme="dark"] body          { background-color: var(--color-surface); color: var(--color-text); }
+
+[data-theme="dark"] .cs-navbar {
+  background: #1E293B !important;
+  border-color: var(--color-border);
+}
+[data-theme="dark"] .cs-navbar .navbar-brand,
+[data-theme="dark"] .cs-navbar .navbar-brand span,
+[data-theme="dark"] .cs-navbar .nav-link,
+[data-theme="dark"] .cs-navbar .dropdown-toggle {
+  color: var(--color-text-muted) !important;
+}
+[data-theme="dark"] .cs-navbar .navbar-brand span {
+  color: #2DD4BF !important;
+}
+[data-theme="dark"] .cs-navbar .nav-link:hover,
+[data-theme="dark"] .cs-navbar .nav-link.active {
+  background-color: rgba(255,255,255,0.06) !important;
+  color: var(--color-text) !important;
+}
+[data-theme="dark"] .cs-navbar .navbar-toggler-icon {
+  filter: invert(0.8);
+}
+[data-theme="dark"] #dark-mode-toggle {
+  color: var(--color-text-muted);
+}
+[data-theme="dark"] #dark-mode-toggle:hover {
+  background-color: rgba(255,255,255,0.08);
+  color: var(--color-text);
+}
+[data-theme="dark"] #api-status-indicator {
+  background-color: rgba(255,255,255,0.06);
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+}
+[data-theme="dark"] .card-header.bg-primary {
+  background: var(--color-white) !important;
+  border-color: var(--color-border) !important;
+  border-left-color: var(--color-primary) !important;
+  color: var(--color-text) !important;
+}
 [data-theme="dark"] .main-header  { border-color: var(--color-border); }
 [data-theme="dark"] .section-header { border-color: var(--color-border); }
 [data-theme="dark"] footer         { border-color: var(--color-border); color: var(--color-text-muted); }
@@ -1043,12 +1119,24 @@ body {
 }
 
 /* ============================================================
-   CARD HEADER — more elegant, less Bootstrap-default
+   CARD HEADER — neutralize bg-primary, use clean white style
    ============================================================ */
 .card-header.bg-primary {
-  background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary)) !important;
-  border-bottom: none;
-  color: white;
+  background: var(--color-white) !important;
+  border-bottom: 1px solid var(--color-border) !important;
+  color: var(--color-text) !important;
+  border-left: 3px solid var(--color-primary);
+}
+
+.card-header.bg-primary .text-white,
+.card-header.bg-primary h5,
+.card-header.bg-primary h4,
+.card-header.bg-primary h3 {
+  color: var(--color-text) !important;
+}
+
+.card-header.bg-primary i {
+  color: var(--color-primary);
 }
 
 /* ============================================================
