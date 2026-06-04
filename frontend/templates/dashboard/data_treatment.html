@@ -226,16 +226,8 @@
         // Mostrar loading durante o envio
         form.addEventListener('submit', function() {
             submitButton.disabled = true;
-            submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processando...';
-            
-            // Adicionar alerta de processamento
-            const existingAlert = document.querySelector('.processing-alert');
-            if (!existingAlert) {
-                const processingAlert = document.createElement('div');
-                processingAlert.className = 'alert alert-warning processing-alert';
-                processingAlert.innerHTML = '<i class="fas fa-cog fa-spin"></i> Processando regra de tratamento. Os dados serão atualizados automaticamente...';
-                form.parentNode.insertBefore(processingAlert, form);
-            }
+            submitButton.classList.add('loading');
+            if (window.topLoader) topLoader.start();
         });
         
         // Auto-dismiss alerts após 5 segundos (exceto info e processing)
