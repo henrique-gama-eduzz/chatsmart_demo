@@ -10,36 +10,40 @@
     Esta página apresenta um resumo de todas as análises executadas e permite baixar relatórios consolidados.
 </div>
 
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card text-center bg-light">
-            <div class="card-body">
-                <h5 class="card-title">Total de Análises</h5>
-                <h2 class="display-4">{{ total_analyses }}</h2>
+<div class="row mb-4 align-items-stretch">
+    <div class="col-md-3 d-flex flex-column gap-3">
+        <div class="card text-center mb-0" style="flex:1">
+            <div class="card-body py-3">
+                <div class="text-muted small fw-semibold mb-1">Total</div>
+                <div class="display-5 fw-bold" style="color:var(--color-primary)">{{ total_analyses }}</div>
+            </div>
+        </div>
+        <div class="card text-center mb-0" style="flex:1">
+            <div class="card-body py-3">
+                <div class="text-muted small fw-semibold mb-1">Concluídas</div>
+                <div class="display-5 fw-bold text-success">{{ completed_analyses }}</div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-center text-white bg-success">
-            <div class="card-body">
-                <h5 class="card-title">Concluídas</h5>
-                <h2 class="display-4">{{ completed_analyses }}</h2>
+    <div class="col-md-3 d-flex flex-column gap-3">
+        <div class="card text-center mb-0" style="flex:1">
+            <div class="card-body py-3">
+                <div class="text-muted small fw-semibold mb-1">Com Erro</div>
+                <div class="display-5 fw-bold text-danger">{{ failed_analyses }}</div>
+            </div>
+        </div>
+        <div class="card text-center mb-0" style="flex:1">
+            <div class="card-body py-3">
+                <div class="text-muted small fw-semibold mb-1">Pendentes</div>
+                <div class="display-5 fw-bold text-secondary">{{ pending_analyses }}</div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-center text-white bg-danger">
-            <div class="card-body">
-                <h5 class="card-title">Com Erro</h5>
-                <h2 class="display-4">{{ failed_analyses }}</h2>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-center text-white bg-secondary">
-            <div class="card-body">
-                <h5 class="card-title">Pendentes</h5>
-                <h2 class="display-4">{{ pending_analyses }}</h2>
+    <div class="col-md-6">
+        <div class="card mb-0 h-100">
+            <div class="card-body d-flex align-items-center justify-content-center gap-4">
+                <canvas id="statusChart" style="max-height:160px;max-width:160px"></canvas>
+                <div id="statusLegend" class="d-flex flex-column gap-2 small"></div>
             </div>
         </div>
     </div>
@@ -233,4 +237,59 @@
         <i class="fas fa-home"></i> Ir para Início
     </a>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function() {
+    var completed = {{ completed_analyses }};
+    var failed    = {{ failed_analyses }};
+    var pending   = {{ pending_analyses }};
+    var total     = {{ total_analyses }};
+
+    if (total === 0) return;
+
+    var data   = [];
+    var labels = [];
+    var colors = [];
+
+    if (completed > 0) { data.push(completed); labels.push('Concluídas'); colors.push('#059669'); }
+    if (failed    > 0) { data.push(failed);    labels.push('Com erro');   colors.push('#DC2626'); }
+    if (pending   > 0) { data.push(pending);   labels.push('Pendentes');  colors.push('#94A3B8'); }
+
+    new Chart(document.getElementById('statusChart'), {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{ data: data, backgroundColor: colors, borderWidth: 0, hoverOffset: 4 }]
+        },
+        options: {
+            cutout: '72%',
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            return ' ' + ctx.label + ': ' + ctx.parsed +
+                                   ' (' + Math.round(ctx.parsed / total * 100) + '%)';
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    var legend = document.getElementById('statusLegend');
+    labels.forEach(function(label, i) {
+        var pct = Math.round(data[i] / total * 100);
+        legend.innerHTML +=
+            '<div class="d-flex align-items-center gap-2">' +
+            '<span style="width:12px;height:12px;border-radius:50%;background:' + colors[i] + ';flex-shrink:0"></span>' +
+            '<span class="fw-medium">' + data[i] + ' ' + label + '</span>' +
+            '<span class="text-muted">(' + pct + '%)</span>' +
+            '</div>';
+    });
+})();
+</script>
 {% endblock %}
