@@ -61,8 +61,8 @@ def get_treated_dataset_preview(upload_id: str, rows: int = 10) -> Dict[str, Any
     except Exception as e:
         return {"success": False, "message": str(e)}
 
-def request_recommendations(upload_id: str, dependent_vars: List[str], 
-                           independent_vars: List[str], 
+def request_recommendations(upload_id: str, dependent_vars: List[str],
+                           independent_vars: List[str],
                            column_descriptions: Dict[str, str],
                            objective: str) -> Dict[str, Any]:
     """Request analysis recommendations from the API."""
@@ -76,8 +76,14 @@ def request_recommendations(upload_id: str, dependent_vars: List[str],
                 "objective": objective
             }
         }
-        response = requests.post(f"{API_URL}/api/analysis/recommend", json=payload)
-        return response.json()
+        response = requests.post(f"{API_URL}/api/analysis/recommend", json=payload, timeout=180)
+        data = response.json()
+        if not response.ok and "success" not in data:
+            # Normaliza erros da FastAPI (chave 'detail') para o formato esperado pelo Django
+            return {"success": False, "message": data.get("detail", f"Erro HTTP {response.status_code}")}
+        return data
+    except requests.exceptions.Timeout:
+        return {"success": False, "message": "A geração de recomendações excedeu o tempo limite (180s). Tente com um dataset menor."}
     except Exception as e:
         return {"success": False, "message": str(e)}
 
