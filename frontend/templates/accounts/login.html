@@ -1,65 +1,88 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Login - ChatSmart{% endblock %}
-
-{% block header %}Entrar na sua conta{% endblock %}
+{% block header %}{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-        <div class="card shadow">
-            <div class="card-body p-4">
-                <h4 class="card-title text-center mb-4">
-                    <i class="fas fa-sign-in-alt me-2"></i>Login
-                </h4>
-                
-                <form method="post" novalidate>
-                    {% csrf_token %}
-                    
-                    {% if form.non_field_errors %}
-                    <div class="alert alert-danger">
-                        {% for error in form.non_field_errors %}
-                            {{ error }}
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.username.id_for_label }}" class="form-label">Usuário</label>
-                        {{ form.username }}
-                        {% if form.username.errors %}
-                            <div class="text-danger">
-                                {% for error in form.username.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.password.id_for_label }}" class="form-label">Senha</label>
-                        {{ form.password }}
-                        {% if form.password.errors %}
-                            <div class="text-danger">
-                                {% for error in form.password.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="d-grid gap-2 mt-4">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-sign-in-alt me-2"></i>Entrar
-                        </button>
-                    </div>
-                </form>
-                
-                <div class="mt-4 text-center">
-                    <p>Não tem uma conta? <a href="{% url 'register' %}">Registre-se</a></p>
-                </div>
+<div class="login-wrapper">
+
+    <!-- Painel de marca -->
+    <div class="login-brand-panel">
+        <div class="brand-logo">
+            <img src="{% static 'logo.png' %}" alt="ChatSmart">
+            <span>ChatSmart</span>
+        </div>
+        <h2>Análises Lean Six Sigma com inteligência artificial</h2>
+        <p class="brand-tagline">
+            Transforme seus dados em insights acionáveis com recomendações estatísticas personalizadas e relatórios profissionais gerados automaticamente.
+        </p>
+        <div class="brand-features">
+            <div class="brand-feature">
+                <i class="fas fa-chart-bar"></i>
+                <span>Análises estatísticas automatizadas</span>
+            </div>
+            <div class="brand-feature">
+                <i class="fas fa-lightbulb"></i>
+                <span>Recomendações guiadas por IA</span>
+            </div>
+            <div class="brand-feature">
+                <i class="fas fa-file-alt"></i>
+                <span>Relatórios em linguagem natural</span>
+            </div>
+            <div class="brand-feature">
+                <i class="fas fa-project-diagram"></i>
+                <span>Metodologia DMAIC estruturada</span>
             </div>
         </div>
     </div>
+
+    <!-- Painel do formulário -->
+    <div class="login-form-panel">
+        <h3>Bem-vindo de volta</h3>
+        <p class="login-subtitle">Entre na sua conta para continuar</p>
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger py-2 small">
+                {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="mb-3">
+                <label for="{{ form.username.id_for_label }}" class="form-label fw-medium small">Usuário</label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                <div class="text-danger small mt-1">
+                    {% for error in form.username.errors %}{{ error }}{% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="mb-4">
+                <label for="{{ form.password.id_for_label }}" class="form-label fw-medium small">Senha</label>
+                {{ form.password }}
+                {% if form.password.errors %}
+                <div class="text-danger small mt-1">
+                    {% for error in form.password.errors %}{{ error }}{% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary btn-lg fw-semibold">
+                    Entrar
+                </button>
+            </div>
+        </form>
+
+        <p class="text-center mt-4 mb-0 small text-muted">
+            Não tem uma conta?
+            <a href="{% url 'register' %}" class="text-decoration-none fw-semibold">Cadastre-se</a>
+        </p>
+    </div>
+
 </div>
 {% endblock %}

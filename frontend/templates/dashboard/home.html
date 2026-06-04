@@ -56,10 +56,16 @@
                                 <a href="{% url 'project_list' %}" class="btn btn-sm btn-outline-primary">Ver todos os projetos</a>
                             </div>
                         {% else %}
-                            <p class="card-text text-muted">Nenhum projeto recente.</p>
-                            <a href="{% url 'project_list' %}" class="btn btn-primary">
-                                <i class="fas fa-folder-plus"></i> Criar Primeiro Projeto
-                            </a>
+                            <div class="empty-state">
+                                <div class="empty-state-icon">
+                                    <i class="fas fa-folder-open"></i>
+                                </div>
+                                <h5>Nenhum projeto ainda</h5>
+                                <p>Crie seu primeiro projeto para começar as análises.</p>
+                                <a href="{% url 'project_list' %}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-folder-plus me-1"></i> Criar Projeto
+                                </a>
+                            </div>
                         {% endif %}
                     </div>
                 </div>

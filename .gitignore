@@ -1,3 +1,6 @@
+# Claude Code internal files
+.claude/
+
 # Ignore all env directories
 env/
 */env/
