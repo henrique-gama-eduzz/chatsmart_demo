@@ -1,0 +1,365 @@
+{% extends 'base.html' %}
+
+{% block title %}Executar Análises - ChatSmart{% endblock %}
+
+{% block header %}Executar Análises{% endblock %}
+
+{% block content %}
+<!-- Notificação de operação em andamento - não bloqueia a navegação -->
+<div id="executionStatus" class="operation-status">
+    <div class="d-flex align-items-center">
+        <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
+            <span class="visually-hidden">Carregando...</span>
+        </div>
+        <div>
+            <strong id="executionTitle">Executando análise...</strong>
+            <div id="executionTime">Aguarde, isso pode levar alguns segundos.</div>
+        </div>
+    </div>
+</div>
+
+<div class="alert alert-info">
+    <i class="fas fa-info-circle me-2"></i> 
+    Nesta etapa você pode executar as análises recomendadas e visualizar os resultados.
+</div>
+
+{% if analyses %}
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-tasks"></i> Progresso</span>
+                <span>Análise {{ current_idx|add:"1" }} de {{ total_analyses }}</span>
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="progress mb-3" style="height: 25px;">
+                <div class="progress-bar" role="progressbar" 
+                     style="width: calc({{ current_idx|add:"1" }} * 100% / {{ total_analyses }});" 
+                     aria-valuenow="{{ current_idx|add:"1" }}" aria-valuemin="0" aria-valuemax="{{ total_analyses }}">
+                    {{ current_idx|add:"1" }}/{{ total_analyses }}
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <div>
+                    <a href="{% url 'execute' dataset.upload_id %}?analysis={% if current_idx > 0 %}{{ current_idx|add:"-1" }}{% else %}0{% endif %}" 
+                       class="btn btn-outline-secondary {% if current_idx == 0 %}disabled{% endif %}">
+                        <i class="fas fa-arrow-left"></i> Anterior
+                    </a>
+                </div>
+                <div>
+                    <form method="post" class="d-inline" id="executionForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="current_idx" value="{{ current_idx }}">
+                        
+                        <button type="submit" name="execute_analysis" value="{{ current_analysis.id }}" 
+                                class="btn btn-primary me-2 btn-has-spinner" id="executeSingleBtn">
+                            <span class="btn-text"><i class="fas fa-play"></i> Executar Esta Análise</span>
+                            <span class="btn-spinner spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        </button>
+                        
+                        <button type="submit" name="execute_all" 
+                                class="btn btn-success btn-has-spinner" id="executeAllBtn">
+                            <span class="btn-text"><i class="fas fa-play-circle"></i> Executar Todas</span>
+                            <span class="btn-spinner spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        </button>
+                    </form>
+                </div>
+                <div>
+                    <a href="{% url 'execute' dataset.upload_id %}?analysis={% if current_idx < total_analyses|add:"-1" %}{{ current_idx|add:"1" }}{% else %}{{ current_idx }}{% endif %}" 
+                       class="btn btn-outline-secondary {% if current_idx >= total_analyses|add:"-1" %}disabled{% endif %}">
+                        Próxima <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if current_analysis %}
+        <div class="card mb-4" id="analysisCard">
+            <!-- Apenas coloca o loader na área do conteúdo da análise quando estiver carregando -->
+            <div id="analysisLoader" class="section-loader" style="display: none;">
+                <div class="spinner-border text-primary" role="status" style="width: 2rem; height: 2rem;">
+                    <span class="visually-hidden">Carregando...</span>
+                </div>
+                <div class="mt-2">Processando análise...</div>
+            </div>
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Análise {{ current_analysis.number }}: {{ current_analysis.name }}</h5>
+            </div>
+            <div class="card-body">
+                <ul class="nav nav-tabs" id="analysisTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" 
+                                type="button" role="tab" aria-controls="description" aria-selected="true">
+                            Descrição
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="results-tab" data-bs-toggle="tab" data-bs-target="#results" 
+                                type="button" role="tab" aria-controls="results" aria-selected="false">
+                            Resultados
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="interpretation-tab" data-bs-toggle="tab" data-bs-target="#interpretation" 
+                                type="button" role="tab" aria-controls="interpretation" aria-selected="false">
+                            Interpretação
+                        </button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content p-3 border border-top-0 rounded-bottom" id="analysisTabContent">
+                    <!-- Aba de Descrição -->
+                    <div class="tab-pane fade show active" id="description" role="tabpanel" aria-labelledby="description-tab">
+                        <h5>Variáveis a serem utilizadas</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card bg-light mb-3">
+                                    <div class="card-header">Variáveis Dependentes</div>
+                                    <div class="card-body">
+                                        <ul>
+                                            {% for var in current_analysis.dependent_vars %}
+                                                <li>{{ var }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card bg-light mb-3">
+                                    <div class="card-header">Variáveis Independentes</div>
+                                    <div class="card-body">
+                                        <ul>
+                                            {% for var in current_analysis.independent_vars %}
+                                                <li>{{ var }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h5>Detalhes da Análise</h5>
+                        <div class="card">
+                            <div class="card-body">
+                                <p>{{ current_analysis.content|linebreaks }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Aba de Resultados -->
+                    <div class="tab-pane fade" id="results" role="tabpanel" aria-labelledby="results-tab">
+                        {% if current_analysis.status == 'completed' and current_analysis.results %}
+                            {% if current_analysis.is_successful %}
+                                <div class="alert alert-success">
+                                    <i class="fas fa-check-circle me-2"></i> Análise executada com sucesso!
+                                </div>
+                                
+                                <!-- Visualizações -->
+                                {% if current_analysis.get_plots %}
+                                    <h5>Visualizações</h5>
+                                    <div class="row">
+                                        {% for plot in current_analysis.get_plots %}
+                                            <div class="col-md-6 mb-4">
+                                                <div class="card">
+                                                    <div class="card-body text-center">
+                                                        <img src="data:image/png;base64,{{ plot.data }}" 
+                                                             alt="Visualização" class="img-fluid">
+                                                    </div>
+                                                    {% if plot.id %}
+                                                        <div class="card-footer text-muted text-center">
+                                                            {{ plot.id }}
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                
+                                <!-- Tabelas -->
+                                {% if current_analysis.get_tables %}
+                                    <h5>Tabelas</h5>
+                                    {% for table in current_analysis.get_tables %}
+                                        <div class="card mb-4">
+                                            <div class="card-header">
+                                                {{ table.description|default:"Tabela" }}
+                                            </div>
+                                            <div class="card-body">
+                                                {{ table.html|safe }}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
+                                
+                                <!-- Saída de Texto -->
+                                {% if current_analysis.results.text_output %}
+                                    <h5>Saída de Texto</h5>
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <pre>{{ current_analysis.results.text_output }}</pre>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <div class="alert alert-danger">
+                                    <i class="fas fa-exclamation-circle me-2"></i> Erro ao executar análise:
+                                    <p class="mt-2">{{ current_analysis.results.error|default:"Erro desconhecido" }}</p>
+                                </div>
+                            {% endif %}
+                        {% elif current_analysis.status == 'running' %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-spinner fa-spin me-2"></i> Análise em execução...
+                            </div>
+                            <div class="text-center py-5">
+                                <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                                    <span class="visually-hidden">Executando...</span>
+                                </div>
+                                <p class="mt-3">Processando sua análise. Isso pode levar alguns segundos...</p>
+                            </div>
+                        {% elif current_analysis.status == 'failed' %}
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-circle me-2"></i> A execução da análise falhou.
+                            </div>
+                        {% else %}
+                            <div class="alert alert-secondary">
+                                <i class="fas fa-info-circle me-2"></i> Esta análise ainda não foi executada.
+                                Clique em "Executar Esta Análise" para ver os resultados.
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Aba de Interpretação -->
+                    <div class="tab-pane fade" id="interpretation" role="tabpanel" aria-labelledby="interpretation-tab">
+                        {% if current_analysis.status == 'completed' and current_analysis.is_successful %}
+                            {% if current_analysis.get_interpretation %}
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h5 class="card-title"><i class="fas fa-lightbulb text-warning me-2"></i> Interpretação dos Resultados</h5>
+                                        <div class="mt-3">
+                                            {{ current_analysis.get_interpretation|linebreaks }}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i> Não há interpretação disponível para esta análise.
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="alert alert-secondary">
+                                <i class="fas fa-info-circle me-2"></i> Execute a análise primeiro para gerar uma interpretação dos resultados.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    
+    <div class="d-flex justify-content-between">
+        <a href="{% url 'recommendations' dataset.upload_id %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Voltar para Recomendações
+        </a>
+        <a href="{% url 'results' dataset.upload_id %}" class="btn btn-primary">
+            Ver Todos os Resultados <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+{% else %}
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle me-2"></i> 
+        Nenhuma análise encontrada. Por favor, volte à etapa anterior e obtenha recomendações de análise.
+    </div>
+    
+    <div class="text-center mt-4">
+        <a href="{% url 'define_variables' dataset.upload_id %}" class="btn btn-primary">
+            <i class="fas fa-arrow-left"></i> Voltar e Definir Variáveis
+        </a>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('executionForm');
+        const singleBtn = document.getElementById('executeSingleBtn');
+        const allBtn = document.getElementById('executeAllBtn');
+        const executionStatus = document.getElementById('executionStatus');
+        const executionTitle = document.getElementById('executionTitle');
+        const executionTime = document.getElementById('executionTime');
+        const analysisCard = document.getElementById('analysisCard');
+        const analysisLoader = document.getElementById('analysisLoader');
+        
+        // Adicionar loader ao executar uma única análise
+        if (singleBtn) {
+            singleBtn.addEventListener('click', function(e) {
+                this.classList.add('loading');
+                executionStatus.classList.add('visible');
+                executionTitle.textContent = 'Executando análise...';
+                
+                if (analysisLoader) analysisLoader.style.display = 'flex';
+                startExecutionTimer();
+                
+                localStorage.setItem('executionType', 'single');
+            });
+        }
+        
+        // Adicionar loader ao executar todas as análises
+        if (allBtn) {
+            allBtn.addEventListener('click', function(e) {
+                this.classList.add('loading');
+                if (singleBtn) singleBtn.classList.add('loading'); // Desativar ambos os botões
+                
+                executionStatus.classList.add('visible');
+                executionTitle.textContent = 'Executando todas as análises...';
+                
+                if (analysisLoader) analysisLoader.style.display = 'flex';
+                startExecutionTimer();
+                
+                localStorage.setItem('executionType', 'all');
+            });
+        }
+        
+        // Função para iniciar o contador de tempo
+        function startExecutionTimer() {
+            let seconds = 0;
+            const timeInterval = setInterval(function() {
+                seconds++;
+                executionTime.textContent = `Aguarde, processando (${seconds}s)...`;
+                localStorage.setItem('executionSeconds', seconds);
+            }, 1000);
+            
+            localStorage.setItem('executionTimeInterval', timeInterval);
+            localStorage.setItem('executionInProgress', 'true');
+        }
+        
+        // Limpar intervalo se existir ao carregar a página
+        if (localStorage.getItem('executionTimeInterval')) {
+            clearInterval(parseInt(localStorage.getItem('executionTimeInterval')));
+            localStorage.removeItem('executionTimeInterval');
+        }
+        
+        // Limpar execução em andamento quando a página carrega
+        // Isso impede que o estado de execução anterior seja retomado automaticamente
+        localStorage.removeItem('executionInProgress');
+        localStorage.removeItem('executionType');
+        localStorage.removeItem('executionSeconds');
+        
+        // Esconder indicadores de loading ao carregar a página
+        if (singleBtn) singleBtn.classList.remove('loading');
+        if (allBtn) allBtn.classList.remove('loading');
+        if (executionStatus) executionStatus.classList.remove('visible');
+        if (analysisLoader) analysisLoader.style.display = 'none';
+        
+        // Se há uma análise em execução (com status 'running'), atualizar a página a cada 5 segundos
+        const runningAnalyses = document.querySelectorAll('.analysis-running, [data-status="running"]');
+        if (runningAnalyses.length > 0) {
+            setTimeout(function() {
+                window.location.reload();
+            }, 5000);
+        }
+    });
+</script>
+{% endblock %}

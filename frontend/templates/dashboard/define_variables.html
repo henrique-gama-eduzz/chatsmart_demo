@@ -1,0 +1,425 @@
+{% extends 'base.html' %}
+{% load dashboard_tags %}
+
+{% block title %}Definir Variáveis - ChatSmart{% endblock %}
+
+{% block header %}Definir Variáveis{% endblock %}
+
+{% block content %}
+<!-- Notificação de operação em andamento - não bloqueia a navegação -->
+<div id="operationStatus" class="operation-status">
+    <div class="d-flex align-items-center">
+        <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
+            <span class="visually-hidden">Carregando...</span>
+        </div>
+        <div>
+            <strong>Gerando recomendações...</strong>
+            <div id="operationTime">Aguarde, isso pode levar alguns segundos.</div>
+        </div>
+    </div>
+</div>
+
+<!-- Loader de tela cheia para geração de recomendações -->
+<div id="recommendationsLoader" class="fullscreen-loader" style="display: none;">
+    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+        <span class="visually-hidden">Carregando...</span>
+    </div>
+    <div class="loader-message">Gerando recomendações de análise...</div>
+    <div class="loader-message" id="loadingTime">Aguarde, isso pode levar alguns segundos.</div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-table"></i> Prévia dos Dados</h5>
+        <div class="dropdown">
+            <button class="btn btn-light btn-sm dropdown-toggle" type="button" id="downloadDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-download"></i> Baixar Dados
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="downloadDropdown">
+                <li>
+                    <a class="dropdown-item" href="#" onclick="downloadData('csv')">
+                        <i class="fas fa-file-csv"></i> Baixar como CSV
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" href="#" onclick="downloadData('xlsx')">
+                        <i class="fas fa-file-excel"></i> Baixar como Excel
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            {% if preview %}
+                <table class="table table-striped table-hover">
+                    <thead class="table-primary">
+                        <tr>
+                            {% for column in dataset.columns %}
+                                <th>{{ column }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in preview %}
+                            <tr>
+                                {% for column in dataset.columns %}
+                                    <td>{{ row|get_item:column|format_cell_value }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="alert alert-warning">
+                    Prévia dos dados não disponível.
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="row mt-3">
+            <div class="col-md-4">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h5 class="card-title">Informações do Dataset</h5>
+                        <p><strong>Nome:</strong> {{ dataset.name }}</p>
+                        <p><strong>Linhas:</strong> {{ dataset.rows }}</p>
+                        <p><strong>Colunas:</strong> {{ dataset.columns|length }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            {% if dataset.get_removed_columns %}
+            <div class="col-md-8">
+                <div class="card bg-warning text-dark">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-minus-circle"></i> Colunas Removidas
+                        </h5>
+                        <div class="small">
+                            {% for column in dataset.get_removed_columns %}
+                                <span class="badge bg-light text-dark me-1 mb-1">{{ column }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="alert alert-info d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Dica:</strong> Se você aplicou transformações aos dados e não vê as novas colunas, 
+                        clique no botão abaixo para atualizar a lista.
+                    </div>
+                    <div>
+                        <a href="{% url 'data_treatment' dataset.upload_id %}" class="btn btn-sm btn-outline-secondary me-2">
+                            <i class="fas fa-tools"></i> Tratar Dados
+                        </a>
+                        <a href="{% url 'define_variables' dataset.upload_id %}?refresh=1" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-sync-alt"></i> Atualizar Colunas
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-sliders-h"></i> Selecionar Variáveis e Definir Objetivo</h5>
+    </div>
+    <div id="variablesContainer" class="card-body">
+        <div class="alert alert-info mb-4">
+            <i class="fas fa-info-circle me-2"></i> 
+            Selecione as variáveis dependentes e independentes clicando diretamente nos itens abaixo.
+            Cada item pode ser selecionado ou desmarcado com um clique.
+        </div>
+        
+        <form method="post" id="variableSelectionForm">
+            {% csrf_token %}
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <strong>Variáveis Dependentes (Y)</strong>
+                            <i class="fas fa-info-circle" data-bs-toggle="tooltip" title="{{ variable_form.dependent_vars.help_text }}"></i>
+                            <span class="badge bg-primary" id="dep-vars-count">0 selecionada(s)</span>
+                        </label>
+                        
+                        <!-- Campo oculto para armazenar as seleções -->
+                        <select name="dependent_vars" id="id_dependent_vars" multiple class="d-none">
+                            {% for column in dataset.columns %}
+                                <option value="{{ column }}">{{ column }}</option>
+                            {% endfor %}
+                        </select>
+                        
+                        <!-- Lista de variáveis clicáveis -->
+                        <div class="variable-selector" id="dependent-selector">
+                            {% for column in dataset.columns %}
+                                <div class="variable-item" data-value="{{ column }}" data-target="dependent_vars">
+                                    {{ column }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="form-text">
+                            <strong>Selecione uma ou mais variáveis</strong> que representam os resultados que você quer melhorar.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <strong>Variáveis Independentes (X)</strong>
+                            <i class="fas fa-info-circle" data-bs-toggle="tooltip" title="{{ variable_form.independent_vars.help_text }}"></i>
+                            <span class="badge bg-primary" id="indep-vars-count">0 selecionada(s)</span>
+                        </label>
+                        
+                        <!-- Campo oculto para armazenar as seleções -->
+                        <select name="independent_vars" id="id_independent_vars" multiple class="d-none">
+                            {% for column in dataset.columns %}
+                                <option value="{{ column }}">{{ column }}</option>
+                            {% endfor %}
+                        </select>
+                        
+                        <!-- Lista de variáveis clicáveis -->
+                        <div class="variable-selector" id="independent-selector">
+                            {% for column in dataset.columns %}
+                                <div class="variable-item" data-value="{{ column }}" data-target="independent_vars">
+                                    {{ column }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="form-text">
+                            <strong>Selecione uma ou mais variáveis</strong> que podem influenciar seus resultados.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="{{ variable_form.analysis_objective.id_for_label }}" class="form-label">
+                    <strong>Objetivo da Análise</strong>
+                    <i class="fas fa-info-circle" data-bs-toggle="tooltip" title="{{ variable_form.analysis_objective.help_text }}"></i>
+                </label>
+                {{ variable_form.analysis_objective }}
+                <div class="form-text">
+                    Explique o que você quer descobrir ou melhorar com esta análise.
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <div class="accordion" id="columnDescriptions">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingDescriptions">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDescriptions" aria-expanded="false" aria-controls="collapseDescriptions">
+                                <strong>Descrições de Colunas (Opcional)</strong>
+                            </button>
+                        </h2>
+                        <div id="collapseDescriptions" class="accordion-collapse collapse" aria-labelledby="headingDescriptions" data-bs-parent="#columnDescriptions">
+                            <div class="accordion-body">
+                                <p>Adicionar descrições para suas colunas pode ajudar o algoritmo a entender melhor seus dados.</p>
+                                
+                                <div class="row">
+                                    {% for field in description_form %}
+                                        <div class="col-md-6 mb-2">
+                                            <div class="mb-3">
+                                                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                                                {{ field }}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'upload' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </a>
+                <button type="submit" id="generateRecommendationsBtn" class="btn btn-primary btn-has-spinner">
+                    <span class="btn-text"><i class="fas fa-lightbulb"></i> Gerar Recomendações</span>
+                    <span class="btn-spinner spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Função para download dos dados tratados
+    function downloadData(format) {
+        const uploadId = "{{ dataset.upload_id }}";
+        const downloadUrl = `http://localhost:8000/api/data-treatment/download/${uploadId}?format=${format}`;
+        
+        // Criar elemento de link temporário para o download
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = `dados_tratados_${uploadId}.${format}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Mostrar mensagem de sucesso
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-success alert-dismissible fade show';
+        alertDiv.innerHTML = `
+            <i class="fas fa-check-circle"></i>
+            Download iniciado! Os dados tratados estão sendo baixados em formato ${format.toUpperCase()}.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        
+        // Inserir alerta no topo da página
+        const contentDiv = document.querySelector('.card-body');
+        contentDiv.insertBefore(alertDiv, contentDiv.firstChild);
+        
+        // Auto-remove o alerta após 4 segundos
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.remove();
+            }
+        }, 4000);
+    }
+
+    // Inicializar tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+    
+    // Funcionalidade para seleção de variáveis com clique
+    document.addEventListener('DOMContentLoaded', function() {
+        const variableItems = document.querySelectorAll('.variable-item');
+        
+        variableItems.forEach(item => {
+            item.addEventListener('click', function() {
+                // Toggle classe selecionada
+                this.classList.toggle('selected');
+                
+                // Atualizar campo select oculto
+                const targetField = this.getAttribute('data-target');
+                const selectElement = document.getElementById('id_' + targetField);
+                const value = this.getAttribute('data-value');
+                
+                // Encontrar a opção correspondente
+                const option = Array.from(selectElement.options).find(opt => opt.value === value);
+                
+                if (option) {
+                    // Alternar seleção
+                    option.selected = this.classList.contains('selected');
+                    
+                    // Atualizar contador
+                    updateCounter(targetField);
+                }
+            });
+        });
+        
+        // Função para atualizar contadores
+        function updateCounter(fieldName) {
+            const selectElement = document.getElementById('id_' + fieldName);
+            const selectedCount = Array.from(selectElement.selectedOptions).length;
+            const counterId = fieldName === 'dependent_vars' ? 'dep-vars-count' : 'indep-vars-count';
+            
+            document.getElementById(counterId).textContent = `${selectedCount} selecionada(s)`;
+        }
+        
+        // Mostrar loader ao enviar formulário
+        const form = document.getElementById('variableSelectionForm');
+        const submitBtn = document.getElementById('generateRecommendationsBtn');
+        const statusElement = document.getElementById('operationStatus');
+        
+        form.addEventListener('submit', function(e) {
+            // Verificar se há pelo menos uma variável dependente e uma independente selecionadas
+            const depVars = document.getElementById('id_dependent_vars');
+            const indepVars = document.getElementById('id_independent_vars');
+            
+            if (depVars.selectedOptions.length === 0 || indepVars.selectedOptions.length === 0) {
+                e.preventDefault();
+                alert('Você precisa selecionar pelo menos uma variável dependente e uma independente.');
+                return;
+            }
+            
+            // Mostrar loader não bloqueante
+            submitBtn.classList.add('loading');
+            statusElement.classList.add('visible');
+            
+            // Atualizar mensagem de tempo a cada segundo
+            let seconds = 0;
+            const timeInterval = setInterval(function() {
+                seconds++;
+                document.getElementById('operationTime').textContent = `Aguarde, processando (${seconds}s)...`;
+            }, 1000);
+            
+            // Armazenar o intervalo no localStorage para poder limpar caso o usuário recarregue a página
+            localStorage.setItem('processingTimeInterval', timeInterval);
+        });
+        
+        // Limpar intervalo se existir ao carregar a página
+        if (localStorage.getItem('processingTimeInterval')) {
+            clearInterval(parseInt(localStorage.getItem('processingTimeInterval')));
+            localStorage.removeItem('processingTimeInterval');
+        }
+        
+        // Verificar se há uma operação em andamento
+        if (localStorage.getItem('operationInProgress') === 'true') {
+            statusElement.classList.add('visible');
+            
+            // Iniciar contador de tempo
+            let seconds = parseInt(localStorage.getItem('operationSeconds') || 0);
+            const timeInterval = setInterval(function() {
+                seconds++;
+                localStorage.setItem('operationSeconds', seconds);
+                document.getElementById('operationTime').textContent = `Aguarde, processando (${seconds}s)...`;
+            }, 1000);
+            
+            localStorage.setItem('processingTimeInterval', timeInterval);
+        }
+    });
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .variable-selector {
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        padding: 0.5rem;
+        background-color: #fff;
+    }
+    
+    .variable-item {
+        padding: 8px 12px;
+        margin: 4px 0;
+        cursor: pointer;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+        user-select: none;
+        border: 1px solid #e9ecef;
+    }
+    
+    .variable-item:hover {
+        background-color: #e9ecef;
+    }
+    
+    .variable-item.selected {
+        background-color: #0d6efd;
+        color: white;
+        border-color: #0d6efd;
+    }
+</style>
+{% endblock %}

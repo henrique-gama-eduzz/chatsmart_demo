@@ -1,0 +1,236 @@
+{% extends 'base.html' %}
+
+{% block title %}Resultados das Análises - ChatSmart{% endblock %}
+
+{% block header %}Resultados das Análises{% endblock %}
+
+{% block content %}
+<div class="alert alert-info">
+    <i class="fas fa-info-circle me-2"></i> 
+    Esta página apresenta um resumo de todas as análises executadas e permite baixar relatórios consolidados.
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center bg-light">
+            <div class="card-body">
+                <h5 class="card-title">Total de Análises</h5>
+                <h2 class="display-4">{{ total_analyses }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title">Concluídas</h5>
+                <h2 class="display-4">{{ completed_analyses }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center text-white bg-danger">
+            <div class="card-body">
+                <h5 class="card-title">Com Erro</h5>
+                <h2 class="display-4">{{ failed_analyses }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center text-white bg-secondary">
+            <div class="card-body">
+                <h5 class="card-title">Pendentes</h5>
+                <h2 class="display-4">{{ pending_analyses }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if pending_analyses > 0 %}
+    <div class="alert alert-warning mb-4">
+        <i class="fas fa-exclamation-triangle me-2"></i> 
+        {{ pending_analyses }} análises ainda não foram executadas. 
+        Execute todas as análises antes de gerar relatórios completos.
+    </div>
+{% endif %}
+
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-download"></i> Download de Relatórios</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-body text-center">
+                        <h5 class="card-title"><i class="fas fa-file-code"></i> Relatório HTML</h5>
+                        <p class="card-text">Relatório completo com gráficos interativos e tabelas.</p>
+                        <a href="{% url 'download_report' dataset.upload_id 'html' %}" class="btn btn-primary {% if completed_analyses == 0 %}disabled{% endif %}">
+                            <i class="fas fa-download"></i> Baixar HTML
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-body text-center">
+                        <h5 class="card-title"><i class="fas fa-file-word"></i> Relatório Word</h5>
+                        <p class="card-text">Documento DOCX com as análises e interpretações.</p>
+                        <a href="{% url 'download_report' dataset.upload_id 'docx' %}" class="btn btn-primary {% if completed_analyses == 0 %}disabled{% endif %}">
+                            <i class="fas fa-download"></i> Baixar DOCX
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Resumo das Análises</h5>
+    </div>
+    <div class="card-body">
+        {% if analyses %}
+            <div class="accordion" id="analysesAccordion">
+                {% for analysis in analyses %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading{{ analysis.id }}">
+                            <button class="accordion-button collapsed" type="button" 
+                                    data-bs-toggle="collapse" data-bs-target="#collapse{{ analysis.id }}" 
+                                    aria-expanded="false" aria-controls="collapse{{ analysis.id }}">
+                                <div class="d-flex justify-content-between w-100 me-3">
+                                    <span>
+                                        {% if analysis.status == 'completed' %}
+                                            <i class="fas fa-check-circle text-success me-2"></i>
+                                        {% elif analysis.status == 'failed' %}
+                                            <i class="fas fa-times-circle text-danger me-2"></i>
+                                        {% elif analysis.status == 'running' %}
+                                            <i class="fas fa-spinner fa-spin text-primary me-2"></i>
+                                        {% else %}
+                                            <i class="fas fa-clock text-secondary me-2"></i>
+                                        {% endif %}
+                                        Análise {{ analysis.number }}: {{ analysis.name }}
+                                    </span>
+                                    <span class="badge {% if analysis.status == 'completed' %}bg-success{% elif analysis.status == 'failed' %}bg-danger{% elif analysis.status == 'running' %}bg-primary{% else %}bg-secondary{% endif %}">
+                                        {{ analysis.get_status_display }}
+                                    </span>
+                                </div>
+                            </button>
+                        </h2>
+                        <div id="collapse{{ analysis.id }}" class="accordion-collapse collapse" 
+                             aria-labelledby="heading{{ analysis.id }}" data-bs-parent="#analysesAccordion">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="card mb-3">
+                                            <div class="card-header">Detalhes</div>
+                                            <div class="card-body">
+                                                <p><strong>Variáveis Dependentes:</strong> 
+                                                    {{ analysis.dependent_vars|join:", " }}</p>
+                                                <p><strong>Variáveis Independentes:</strong> 
+                                                    {{ analysis.independent_vars|join:", " }}</p>
+                                                <p><strong>Última Atualização:</strong> 
+                                                    {{ analysis.updated_at|date:"d/m/Y H:i" }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        {% if analysis.status == 'completed' and analysis.is_successful %}
+                                            <div class="card mb-3">
+                                                <div class="card-header">Resultados</div>
+                                                <div class="card-body">
+                                                    {% if analysis.get_interpretation %}
+                                                        <div class="mb-3">
+                                                            <strong>Interpretação:</strong>
+                                                            <p>{{ analysis.get_interpretation|truncatechars:200 }}</p>
+                                                        </div>
+                                                    {% endif %}
+                                                    
+                                                    {% if analysis.get_plots %}
+                                                        <div class="mb-3">
+                                                            <strong>Visualizações:</strong> {{ analysis.get_plots|length }}
+                                                        </div>
+                                                    {% endif %}
+                                                    
+                                                    {% if analysis.get_tables %}
+                                                        <div class="mb-3">
+                                                            <strong>Tabelas:</strong> {{ analysis.get_tables|length }}
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        {% elif analysis.status == 'failed' %}
+                                            <div class="card border-danger mb-3">
+                                                <div class="card-header bg-danger text-white">Erro</div>
+                                                <div class="card-body">
+                                                    <p>{{ analysis.results.error|default:"Erro desconhecido na execução da análise" }}</p>
+                                                </div>
+                                            </div>
+                                        {% elif analysis.status == 'running' %}
+                                            <div class="text-center py-4">
+                                                <div class="spinner-border text-primary" role="status">
+                                                    <span class="visually-hidden">Carregando...</span>
+                                                </div>
+                                                <p class="mt-2">Análise em execução...</p>
+                                            </div>
+                                        {% else %}
+                                            <div class="alert alert-secondary">
+                                                Análise ainda não executada.
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                {% if analysis.status == 'completed' and analysis.is_successful and analysis.get_plots %}
+                                    <h5 class="mt-3">Visualizações</h5>
+                                    <div class="row">
+                                        {% for plot in analysis.get_plots|slice:":2" %}
+                                            <div class="col-md-6 mb-3">
+                                                <div class="card">
+                                                    <div class="card-body text-center">
+                                                        <img src="data:image/png;base64,{{ plot.data }}" 
+                                                             alt="Visualização" class="img-fluid">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                    
+                                    {% if analysis.get_plots|length > 2 %}
+                                        <div class="text-center mb-3">
+                                            <a href="{% url 'execute' dataset.upload_id %}?analysis={{ forloop.counter0 }}" class="btn btn-outline-primary btn-sm">
+                                                Ver todas as {{ analysis.get_plots|length }} visualizações
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                {% endif %}
+                                
+                                <div class="d-flex justify-content-end mt-3">
+                                    <a href="{% url 'execute' dataset.upload_id %}?analysis={{ forloop.counter0 }}" class="btn btn-primary">
+                                        <i class="fas fa-eye"></i> Ver Detalhes Completos
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i> 
+                Não há análises disponíveis. Retorne à etapa anterior para criar recomendações e executar análises.
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="d-flex justify-content-between mt-4">
+    <a href="{% url 'execute' dataset.upload_id %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Voltar para Execução
+    </a>
+    
+    <a href="{% url 'home' %}" class="btn btn-primary">
+        <i class="fas fa-home"></i> Ir para Início
+    </a>
+</div>
+{% endblock %}

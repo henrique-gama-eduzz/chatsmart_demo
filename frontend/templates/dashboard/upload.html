@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload de Dados - ChatSmart{% endblock %}
+
+{% block header %}Upload de Dados{% endblock %}
+
+{% block content %}
+<div class="alert alert-info">
+    <i class="fas fa-info-circle me-2"></i> 
+    Carregue seus dados para começar. Formatos aceitos: CSV e Excel.
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <ul class="nav nav-pills mb-3" id="data-source-tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="file-upload-tab" data-bs-toggle="pill" data-bs-target="#file-upload" 
+                    type="button" role="tab" aria-controls="file-upload" aria-selected="true">
+                    <i class="fas fa-file-upload me-2"></i> Carregar Arquivo
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="database-tab" data-bs-toggle="pill" data-bs-target="#database" 
+                    type="button" role="tab" aria-controls="database" aria-selected="false">
+                    <i class="fas fa-database me-2"></i> Conectar ao Banco de Dados
+                </button>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="tab-content" id="data-source-content">
+    <!-- File Upload Tab -->
+    <div class="tab-pane fade show active" id="file-upload" role="tabpanel" aria-labelledby="file-upload-tab">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-upload"></i> Carregar Arquivo</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.project.id_for_label }}" class="form-label">
+                                    <strong>Selecione o Projeto</strong>
+                                </label>
+                                {{ form.project }}
+                                <div class="form-text">
+                                    Selecione o projeto para este dataset ou 
+                                    <a href="{% url 'project_create' %}" target="_blank">crie um novo projeto</a>.
+                                </div>
+                                {% if form.project.errors %}
+                                    <div class="text-danger">{{ form.project.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.file.id_for_label }}" class="form-label">
+                                    <strong>Selecione um arquivo</strong>
+                                </label>
+                                {{ form.file }}
+                                {% if form.file.errors %}
+                                    <div class="text-danger">{{ form.file.errors }}</div>
+                                {% endif %}
+                                <div class="form-text">
+                                    Seu arquivo deve ter uma linha de cabeçalho e colunas bem definidas.
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-upload"></i> Carregar Arquivo
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-question-circle"></i> Dicas de Preparação</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <h5>Preparando seu arquivo:</h5>
+                            <ul>
+                                <li>Verifique se seu arquivo tem uma linha de cabeçalho com nomes de colunas</li>
+                                <li>Remova colunas irrelevantes para sua análise</li>
+                                <li>Limpe dados inconsistentes ou faltantes</li>
+                                <li>Formatos CSV/Excel são ideais</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <h5>Exemplo de Estrutura de Dados:</h5>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Data</th>
+                                            <th>Processo</th>
+                                            <th>Produto</th>
+                                            <th>Temperatura</th>
+                                            <th>Defeitos</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>2023-01-01</td>
+                                            <td>A</td>
+                                            <td>Produto1</td>
+                                            <td>25.4</td>
+                                            <td>3</td>
+                                        </tr>
+                                        <tr>
+                                            <td>2023-01-02</td>
+                                            <td>B</td>
+                                            <td>Produto2</td>
+                                            <td>26.1</td>
+                                            <td>1</td>
+                                        </tr>
+                                        <tr>
+                                            <td>2023-01-03</td>
+                                            <td>A</td>
+                                            <td>Produto3</td>
+                                            <td>24.8</td>
+                                            <td>5</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Database Connection Tab -->
+    <div class="tab-pane fade" id="database" role="tabpanel" aria-labelledby="database-tab">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-database"></i> Conectar a um Banco de Dados</h5>
+            </div>
+            <div class="card-body">
+                {% if connections %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Tipo de Banco</th>
+                                    <th>Servidor/Host</th>
+                                    <th>Banco de Dados</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for connection in connections %}
+                                    <tr>
+                                        <td>{{ connection.name }}</td>
+                                        <td>{{ connection.get_database_type_display }}</td>
+                                        <td>{{ connection.host|default:"Local" }}</td>
+                                        <td>{{ connection.database_name }}</td>
+                                        <td>
+                                            <a href="{% url 'import_from_database' connection.id %}" class="btn btn-sm btn-success">
+                                                <i class="fas fa-file-import"></i> Importar Dados
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-database fa-4x text-muted mb-3"></i>
+                        <h5>Nenhuma conexão configurada</h5>
+                        <p class="text-muted">Adicione uma conexão de banco de dados para importar dados diretamente.</p>
+                    </div>
+                {% endif %}
+                
+                <div class="d-flex justify-content-between mt-4">
+                    <div></div>
+                    <div>
+                        <a href="{% url 'database_connections' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-cog"></i> Gerenciar Conexões
+                        </a>
+                        <a href="{% url 'add_database_connection' %}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Nova Conexão
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+Django>=4.2,<5.0
+gunicorn==21.2.0
+whitenoise==6.6.0
+psycopg2-binary==2.9.9
+python-dotenv==1.0.0
+requests==2.32.3
+pandas==2.1.1
+numpy==1.26.0
+openpyxl==3.1.5
+Pillow==10.3.0
+SQLAlchemy==2.0.39

@@ -1,0 +1,320 @@
+{% extends 'base.html' %}
+
+{% block title %}Comparar Análises - ChatSmart{% endblock %}
+
+{% block header %}Comparação de Análises{% endblock %}
+
+{% block content %}
+<div class="alert alert-info">
+    <i class="fas fa-info-circle me-2"></i> 
+    Esta página apresenta uma comparação lado a lado de duas análises, destacando suas diferenças e resultados.
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie"></i> Análise 1: {{ analysis1.name }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Dataset:</strong> {{ analysis1.dataset.name }}</p>
+                <p><strong>Número:</strong> Análise #{{ analysis1.number }}</p>
+                <p><strong>Status:</strong> 
+                    {% if analysis1.is_successful %}
+                        <span class="badge bg-success">Sucesso</span>
+                    {% else %}
+                        <span class="badge bg-danger">Falha</span>
+                    {% endif %}
+                </p>
+                <p><strong>Executada em:</strong> {{ analysis1.updated_at|date:"d/m/Y H:i" }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line"></i> Análise 2: {{ analysis2.name }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Dataset:</strong> {{ analysis2.dataset.name }}</p>
+                <p><strong>Número:</strong> Análise #{{ analysis2.number }}</p>
+                <p><strong>Status:</strong> 
+                    {% if analysis2.is_successful %}
+                        <span class="badge bg-success">Sucesso</span>
+                    {% else %}
+                        <span class="badge bg-danger">Falha</span>
+                    {% endif %}
+                </p>
+                <p><strong>Executada em:</strong> {{ analysis2.updated_at|date:"d/m/Y H:i" }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- AI-Generated Insights Section -->
+{% if comparison.ai_insights %}
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-brain"></i> Insights do Assistente IA</h5>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-info">
+            <i class="fas fa-robot me-2"></i> Nosso assistente de IA analisou ambas as análises e gerou insights sobre suas diferenças e complementaridades.
+        </div>
+        
+        <div class="card mb-3">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Insights Principais</h5>
+            </div>
+            <div class="card-body">
+                {{ comparison.ai_insights|safe|linebreaks }}
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Sugestões de Melhoria</h5>
+            </div>
+            <div class="card-body">
+                {{ comparison.ai_suggestions|safe|linebreaks }}
+            </div>
+        </div>
+    </div>
+</div>
+{% elif comparison.both_successful %}
+<div class="alert alert-warning mb-4">
+    <i class="fas fa-cog fa-spin me-2"></i>
+    Os insights de IA estão sendo gerados. Esta operação pode levar alguns instantes. Por favor, recarregue a página em alguns segundos.
+</div>
+{% endif %}
+
+<!-- Comparison of Variables -->
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-exchange-alt"></i> Comparação de Variáveis</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h5>Variáveis Dependentes (Y)</h5>
+                <div class="card bg-light mb-3">
+                    <div class="card-body">
+                        {% if analysis1.dependent_vars %}
+                            <ul>
+                                {% for var in analysis1.dependent_vars %}
+                                    <li>
+                                        {{ var }}
+                                        {% if var in comparison.unique_dep_vars1 %}
+                                            <span class="badge bg-info">Única nesta análise</span>
+                                        {% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted">Nenhuma variável dependente</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <h5>Variáveis Independentes (X)</h5>
+                <div class="card bg-light">
+                    <div class="card-body">
+                        {% if analysis1.independent_vars %}
+                            <ul>
+                                {% for var in analysis1.independent_vars %}
+                                    <li>
+                                        {{ var }}
+                                        {% if var in comparison.unique_indep_vars1 %}
+                                            <span class="badge bg-info">Única nesta análise</span>
+                                        {% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted">Nenhuma variável independente</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <h5>Variáveis Dependentes (Y)</h5>
+                <div class="card bg-light mb-3">
+                    <div class="card-body">
+                        {% if analysis2.dependent_vars %}
+                            <ul>
+                                {% for var in analysis2.dependent_vars %}
+                                    <li>
+                                        {{ var }}
+                                        {% if var in comparison.unique_dep_vars2 %}
+                                            <span class="badge bg-info">Única nesta análise</span>
+                                        {% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted">Nenhuma variável dependente</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <h5>Variáveis Independentes (X)</h5>
+                <div class="card bg-light">
+                    <div class="card-body">
+                        {% if analysis2.independent_vars %}
+                            <ul>
+                                {% for var in analysis2.independent_vars %}
+                                    <li>
+                                        {{ var }}
+                                        {% if var in comparison.unique_indep_vars2 %}
+                                            <span class="badge bg-info">Única nesta análise</span>
+                                        {% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted">Nenhuma variável independente</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Variáveis Comuns -->
+        <div class="card mt-3">
+            <div class="card-header">Variáveis Comuns Entre as Análises</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Variáveis Dependentes Comuns</h6>
+                        {% if comparison.common_dep_vars %}
+                            <ul>
+                                {% for var in comparison.common_dep_vars %}
+                                    <li>{{ var }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted">Nenhuma variável dependente comum</p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Variáveis Independentes Comuns</h6>
+                        {% if comparison.common_indep_vars %}
+                            <ul>
+                                {% for var in comparison.common_indep_vars %}
+                                    <li>{{ var }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted">Nenhuma variável independente comum</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Comparison of Results -->
+{% if comparison.both_successful %}
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-poll"></i> Comparação de Resultados</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Resultados da Análise 1</h5>
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <p><strong>Visualizações:</strong> {{ comparison.plots_count1 }}</p>
+                            <p><strong>Tabelas:</strong> {{ comparison.tables_count1 }}</p>
+                            
+                            <!-- First plot preview if available -->
+                            {% if analysis1.get_plots %}
+                                <div class="mt-3">
+                                    <h6>Amostra de Visualização:</h6>
+                                    <div class="text-center">
+                                        <img src="data:image/png;base64,{{ analysis1.get_plots.0.data }}" 
+                                             alt="Visualização" class="img-fluid" style="max-height: 250px;">
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Interpretation -->
+                    <h5>Interpretação</h5>
+                    <div class="card">
+                        <div class="card-body">
+                            {% if analysis1.get_interpretation %}
+                                {{ analysis1.get_interpretation|linebreaks }}
+                            {% else %}
+                                <p class="text-muted">Sem interpretação disponível</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <h5>Resultados da Análise 2</h5>
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <p><strong>Visualizações:</strong> {{ comparison.plots_count2 }}</p>
+                            <p><strong>Tabelas:</strong> {{ comparison.tables_count2 }}</p>
+                            
+                            <!-- First plot preview if available -->
+                            {% if analysis2.get_plots %}
+                                <div class="mt-3">
+                                    <h6>Amostra de Visualização:</h6>
+                                    <div class="text-center">
+                                        <img src="data:image/png;base64,{{ analysis2.get_plots.0.data }}" 
+                                             alt="Visualização" class="img-fluid" style="max-height: 250px;">
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Interpretation -->
+                    <h5>Interpretação</h5>
+                    <div class="card">
+                        <div class="card-body">
+                            {% if analysis2.get_interpretation %}
+                                {{ analysis2.get_interpretation|linebreaks }}
+                            {% else %}
+                                <p class="text-muted">Sem interpretação disponível</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        Uma ou ambas as análises não foram executadas com sucesso, impossibilitando a comparação de resultados.
+    </div>
+{% endif %}
+
+<div class="d-flex justify-content-between">
+    <a href="{% url 'analysis_history' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Voltar para Histórico
+    </a>
+    
+    <div>
+        <a href="{% url 'execute' analysis1.dataset.upload_id %}?analysis={{ analysis1.number|add:'-1' }}" class="btn btn-outline-primary me-2">
+            <i class="fas fa-eye"></i> Ver Análise 1
+        </a>
+        <a href="{% url 'execute' analysis2.dataset.upload_id %}?analysis={{ analysis2.number|add:'-1' }}" class="btn btn-outline-primary">
+            <i class="fas fa-eye"></i> Ver Análise 2
+        </a>
+    </div>
+</div>
+{% endblock %}

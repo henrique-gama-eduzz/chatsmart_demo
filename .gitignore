@@ -1,0 +1,29 @@
+# Ignore all env directories
+env/
+*/env/
+
+# Ignore all .env files
+.env
+*.env
+
+# Ignore all upload directories
+uploads/
+*/uploads/
+
+# Ignore all __pycache__ directories
+__pycache__/
+*/__pycache__/
+**/__pycache__/
+
+# Database files
+*.sqlite3
+
+# Collected static files
+staticfiles/
+
+# User uploaded media
+frontend/media/
+
+# Python cache
+*.pyc
+*.pyo

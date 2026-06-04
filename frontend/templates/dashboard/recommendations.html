@@ -1,0 +1,360 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Recomendações de Análise - ChatSmart{% endblock %}
+
+{% block header %}Recomendações de Análise{% endblock %}
+
+{% block content %}
+<!-- Notificação de operação em andamento - COMPLETAMENTE DESATIVADA -->
+<div id="saveStatus" class="operation-status" style="display: none !important; visibility: hidden !important;">
+    <div class="d-flex align-items-center">
+        <div class="spinner-border spinner-border-sm text-primary me-2" role="status" style="display: none !important;">
+            <span class="visually-hidden">Carregando...</span>
+        </div>
+        <div>
+            <strong>Salvando alterações...</strong>
+        </div>
+    </div>
+</div>
+
+<!-- Mensagens do Django -->
+{% if messages %}
+    <div id="django-messages">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {% if message.tags == 'success' %}
+                    <i class="fas fa-check-circle me-2"></i>
+                {% elif message.tags == 'error' %}
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                {% elif message.tags == 'warning' %}
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                {% else %}
+                    <i class="fas fa-info-circle me-2"></i>
+                {% endif %}
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<div class="alert alert-info">
+    <i class="fas fa-info-circle me-2"></i> 
+    Esta página exibe as análises recomendadas pela IA com base nas variáveis que você selecionou. 
+    Você pode editar estas recomendações antes de executá-las.
+</div>
+
+<div class="mb-4">
+    <form method="post" id="recommendationsForm">
+        {% csrf_token %}
+        
+        <div class="d-flex justify-content-between mb-3">
+            <h3 class="section-header mb-0">Análises Recomendadas</h3>
+            <div>
+                <div class="dropdown d-inline-block me-2">
+                    <button class="btn btn-outline-info btn-sm dropdown-toggle" type="button" id="downloadDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-download"></i> Baixar Dados
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="downloadDropdown">
+                        <li>
+                            <a class="dropdown-item" href="#" onclick="downloadData('csv')">
+                                <i class="fas fa-file-csv"></i> Baixar como CSV
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#" onclick="downloadData('xlsx')">
+                                <i class="fas fa-file-excel"></i> Baixar como Excel
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <a href="{% url 'recommendations' dataset.upload_id %}?refresh=1" class="btn btn-outline-secondary btn-sm me-2">
+                    <i class="fas fa-sync-alt"></i> Atualizar Colunas
+                </a>
+                <button type="button" id="reloadVariablesBtn" class="btn btn-outline-info btn-sm me-2">
+                    <i class="fas fa-redo-alt"></i> Recarregar Variáveis
+                </button>
+                <button type="submit" name="save_all_edits" class="btn btn-success" id="saveEditsBtn">
+                    <i class="fas fa-save"></i> Salvar Todas as Edições
+                </button>
+            </div>
+        </div>
+        
+        {% if analyses %}
+            <div class="accordion" id="analysesAccordion">
+                {% for analysis in analyses %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading{{ analysis.id }}">
+                            <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" 
+                                    data-bs-toggle="collapse" data-bs-target="#collapse{{ analysis.id }}" 
+                                    aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" 
+                                    aria-controls="collapse{{ analysis.id }}">
+                                <div class="d-flex justify-content-between w-100 me-3">
+                                    <span>Análise {{ analysis.number }}: {{ analysis.name }}</span>
+                                    <span class="badge {% if analysis.status == 'completed' %}bg-success{% elif analysis.status == 'failed' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                        {{ analysis.get_status_display }}
+                                    </span>
+                                </div>
+                            </button>
+                        </h2>
+                        <div id="collapse{{ analysis.id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" 
+                             aria-labelledby="heading{{ analysis.id }}" data-bs-parent="#analysesAccordion">
+                            <div class="accordion-body">
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <label class="form-label">Nome da Análise</label>
+                                        <input type="text" name="name_{{ analysis.number }}" value="{{ analysis.name }}" class="form-control">
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">
+                                            Variáveis Dependentes
+                                            <span class="badge bg-primary" id="dep-vars-count-{{ analysis.number }}">0 selecionada(s)</span>
+                                        </label>
+                                        
+                                        <!-- Campo oculto para armazenar as seleções -->
+                                        <select name="dep_{{ analysis.number }}" id="dep_{{ analysis.number }}" multiple class="d-none">
+                                            {% for column in dataset.columns %}
+                                                <option value="{{ column }}" {% if column in analysis.dependent_vars %}selected{% endif %}>{{ column }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        
+                                        <!-- Lista de variáveis clicáveis -->
+                                        <div class="variable-selector" id="dep-selector-{{ analysis.number }}">
+                                            {% for column in dataset.columns %}
+                                                <div class="variable-item {% if column in analysis.dependent_vars %}selected{% endif %}" 
+                                                     data-value="{{ column }}" data-target="dep_{{ analysis.number }}">
+                                                    {{ column }}
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">
+                                            Variáveis Independentes
+                                            <span class="badge bg-primary" id="indep-vars-count-{{ analysis.number }}">0 selecionada(s)</span>
+                                        </label>
+                                        
+                                        <!-- Campo oculto para armazenar as seleções -->
+                                        <select name="indep_{{ analysis.number }}" id="indep_{{ analysis.number }}" multiple class="d-none">
+                                            {% for column in dataset.columns %}
+                                                <option value="{{ column }}" {% if column in analysis.independent_vars %}selected{% endif %}>{{ column }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        
+                                        <!-- Lista de variáveis clicáveis -->
+                                        <div class="variable-selector" id="indep-selector-{{ analysis.number }}">
+                                            {% for column in dataset.columns %}
+                                                <div class="variable-item {% if column in analysis.independent_vars %}selected{% endif %}" 
+                                                     data-value="{{ column }}" data-target="indep_{{ analysis.number }}">
+                                                    {{ column }}
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Detalhes da Análise</label>
+                                    <textarea name="content_{{ analysis.number }}" class="form-control" rows="6">{{ analysis.content|default:'' }}</textarea>
+                                </div>
+                                
+                                <div class="d-flex justify-content-end">
+                                    <button type="submit" name="remove_analysis" value="{{ analysis.id }}" class="btn btn-outline-danger me-2">
+                                        <i class="fas fa-trash"></i> Remover
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <div class="accordion mt-4" id="newAnalysisAccordion">
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingNewAnalysis">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                data-bs-target="#collapseNewAnalysis" aria-expanded="false" aria-controls="collapseNewAnalysis">
+                            <i class="fas fa-plus me-2"></i> Adicionar Nova Análise
+                        </button>
+                    </h2>
+                    <div id="collapseNewAnalysis" class="accordion-collapse collapse" aria-labelledby="headingNewAnalysis" 
+                         data-bs-parent="#newAnalysisAccordion">
+                        <div class="accordion-body">
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <label class="form-label">Nome da Análise</label>
+                                    <input type="text" name="new_analysis_name" value="Nova Análise Personalizada" class="form-control">
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">
+                                        Variáveis Dependentes
+                                        <span class="badge bg-primary" id="new-dep-vars-count">0 selecionada(s)</span>
+                                    </label>
+                                    
+                                    <!-- Campo oculto para armazenar as seleções -->
+                                    <select name="new_analysis_dep_vars" id="new_analysis_dep_vars" multiple class="d-none">
+                                        {% for column in dataset.columns %}
+                                            <option value="{{ column }}">{{ column }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    
+                                    <!-- Lista de variáveis clicáveis -->
+                                    <div class="variable-selector" id="new-dep-selector">
+                                        {% for column in dataset.columns %}
+                                            <div class="variable-item" data-value="{{ column }}" data-target="new_analysis_dep_vars">
+                                                {{ column }}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">
+                                        Variáveis Independentes
+                                        <span class="badge bg-primary" id="new-indep-vars-count">0 selecionada(s)</span>
+                                    </label>
+                                    
+                                    <!-- Campo oculto para armazenar as seleções -->
+                                    <select name="new_analysis_indep_vars" id="new_analysis_indep_vars" multiple class="d-none">
+                                        {% for column in dataset.columns %}
+                                            <option value="{{ column }}">{{ column }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    
+                                    <!-- Lista de variáveis clicáveis -->
+                                    <div class="variable-selector" id="new-indep-selector">
+                                        {% for column in dataset.columns %}
+                                            <div class="variable-item" data-value="{{ column }}" data-target="new_analysis_indep_vars">
+                                                {{ column }}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Detalhes da Análise</label>
+                                <textarea name="new_analysis_content" class="form-control" rows="6">Descreva o objetivo e contexto desta análise...</textarea>
+                            </div>
+                            
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" name="add_new_analysis" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> Adicionar Esta Análise
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i> 
+                Nenhuma análise recomendada encontrada. Por favor, volte à etapa anterior e defina as variáveis.
+            </div>
+        {% endif %}
+        
+        <div class="d-flex justify-content-between mt-4">
+            <a href="{% url 'define_variables' dataset.upload_id %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </a>
+            <a href="{% url 'execute' dataset.upload_id %}" class="btn btn-primary">
+                <i class="fas fa-play"></i> Executar Análises <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Forçar ocultação do indicador de salvamento */
+    .operation-status {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+    
+    /* Mesmo quando tem a classe 'visible' */
+    .operation-status.visible {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+    }
+    
+    .variable-selector {
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        padding: 0.5rem;
+        background-color: #fff;
+    }
+    
+    .variable-item {
+        padding: 8px 12px;
+        margin: 4px 0;
+        cursor: pointer;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+        user-select: none;
+        border: 1px solid #e9ecef;
+        background-color: #fff;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .variable-item:hover {
+        background-color: #e9ecef;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .variable-item.selected {
+        background-color: #0d6efd !important;
+        color: white !important;
+        border-color: #0d6efd !important;
+        font-weight: 500;
+    }
+    
+    .variable-item.selected:hover {
+        background-color: #0b5ed7 !important;
+        border-color: #0a58ca !important;
+    }
+    
+    /* Estilizar botão durante carregamento */
+    .btn-has-spinner .btn-text {
+        display: inline-block;
+    }
+    
+    .btn-has-spinner .btn-spinner {
+        display: none;
+        margin-left: 0.5rem;
+    }
+    
+    .btn-has-spinner.loading .btn-text {
+        opacity: 0.7;
+    }
+    
+    .btn-has-spinner.loading .btn-spinner {
+        display: inline-block;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Carregar arquivo JavaScript externo -->
+<script src="{% static 'js/recommendations.js' %}"></script>
+<script>
+    // Inicializar a página com o upload_id do dataset
+    document.addEventListener('DOMContentLoaded', function() {
+        initializePage('{{ dataset.upload_id }}');
+    });
+</script>
+{% endblock %}

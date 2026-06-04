@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block title %}Importar Dados - ChatSmart{% endblock %}
+
+{% block header %}Importar Dados de Banco de Dados{% endblock %}
+
+{% block content %}
+<div class="alert alert-info">
+    <i class="fas fa-info-circle me-2"></i> 
+    Aqui você pode escrever consultas SQL para importar dados diretamente do seu banco de dados.
+    Use comandos SELECT simples para buscar os dados necessários para sua análise.
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-database"></i> Importar de: {{ connection.name }}</h5>
+    </div>
+    <div class="card-body">
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <h6>Informações da Conexão:</h6>
+                <table class="table table-sm table-bordered">
+                    <tr>
+                        <th width="30%">Tipo de Banco de Dados</th>
+                        <td>{{ connection.get_database_type_display }}</td>
+                    </tr>
+                    <tr>
+                        <th>Host</th>
+                        <td>{{ connection.host|default:"Local" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Nome do Banco de Dados</th>
+                        <td>{{ connection.database_name }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        {% if current_project %}
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle me-2"></i>
+            Os dados serão importados para o projeto: <strong>{{ current_project.name }}</strong>
+        </div>
+        {% else %}
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <p>Nenhum projeto ativo selecionado. Para selecionar um projeto:</p>
+            <ol>
+                <li>Acesse a <a href="{% url 'project_list' %}" class="alert-link">página de Projetos</a></li>
+                <li>Clique no botão "Ações" ao lado do projeto desejado</li>
+                <li>Selecione "Definir como Atual"</li>
+            </ol>
+            <p>Ou simplesmente clique em "Abrir" em qualquer projeto para defini-lo como atual automaticamente.</p>
+        </div>
+        {% endif %}
+
+        <form method="post" id="sqlForm">
+            {% csrf_token %}
+            
+            <div class="mb-3">
+                <label for="sql_query" class="form-label">Consulta SQL</label>
+                <textarea id="sql_query" name="sql_query" rows="6" class="form-control" 
+                          placeholder="SELECT * FROM sua_tabela LIMIT 1000"></textarea>
+                <div class="form-text">
+                    Escreva uma consulta SQL para selecionar os dados que deseja importar.
+                    Recomendamos limitar os resultados para tabelas grandes.
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'database_connections' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar para Conexões
+                </a>
+                <button type="submit" id="executeBtn" class="btn btn-primary" {% if not current_project %}disabled{% endif %}>
+                    <span class="btn-text"><i class="fas fa-file-import"></i> Importar Dados</span>
+                    <span class="btn-spinner spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-light">
+        <h5 class="mb-0"><i class="fas fa-lightbulb"></i> Exemplos de Consultas</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Consulta Básica</h6>
+                <pre class="bg-light p-2 border rounded"><code>SELECT * FROM clientes LIMIT 1000</code></pre>
+                
+                <h6>Consulta com Filtro</h6>
+                <pre class="bg-light p-2 border rounded"><code>SELECT * FROM pedidos 
+WHERE data_pedido > '2023-01-01'
+LIMIT 500</code></pre>
+            </div>
+            <div class="col-md-6">
+                <h6>Dados Agregados</h6>
+                <pre class="bg-light p-2 border rounded"><code>SELECT 
+  categoria_produto,
+  COUNT(*) AS total_produtos,
+  AVG(preco) AS preco_medio
+FROM produtos
+GROUP BY categoria_produto</code></pre>
+                
+                <h6>Junção de Tabelas</h6>
+                <pre class="bg-light p-2 border rounded"><code>SELECT 
+  p.id_pedido, 
+  c.nome_cliente,
+  p.data_pedido,
+  p.valor_total
+FROM pedidos p
+JOIN clientes c ON p.id_cliente = c.id
+LIMIT 1000</code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('sqlForm');
+        const executeBtn = document.getElementById('executeBtn');
+        
+        form.addEventListener('submit', function() {
+            // Mostrar estado de carregamento
+            executeBtn.classList.add('loading');
+            executeBtn.disabled = true;
+        });
+        
+        // Exemplos de consultas
+        const examples = document.querySelectorAll('pre code');
+        examples.forEach(example => {
+            example.style.cursor = 'pointer';
+            example.title = 'Clique para usar esta consulta';
+            
+            example.addEventListener('click', function() {
+                document.getElementById('sql_query').value = this.textContent.trim();
+                document.getElementById('sql_query').focus();
+            });
+        });
+    });
+</script>
+{% endblock %}

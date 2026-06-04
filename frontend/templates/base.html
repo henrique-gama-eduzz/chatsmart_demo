@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ChatSmart{% endblock %}</title>
+
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    {% load static %}
+    <link rel="icon" href="{% static 'logo.png' %}" type="image/png">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+        <div class="container-fluid">
+            <!-- Logo & Brand -->
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <img src="{% static 'logo.png' %}" alt="Logo" height="40" class="me-2">
+                <span>ChatSmart</span>
+            </a>
+            
+            <!-- Mobile Toggle Button -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <!-- Navigation Content -->
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <!-- Main Menu (Positioned to the right) -->
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}">
+                            <i class="fas fa-home me-1"></i> Início
+                        </a>
+                    </li>
+                    
+                    {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'project_list' %}active{% endif %}" href="{% url 'project_list' %}">
+                            <i class="fas fa-folder me-1"></i> Projetos
+                        </a>
+                    </li>
+                    <!-- <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'analysis_history' %}active{% endif %}" href="{% url 'analysis_history' %}">
+                            <i class="fas fa-history me-1"></i> Histórico
+                        </a>
+                    </li> -->
+                    
+                    <!-- Database Connections -->
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'database_connections' %}active{% endif %}" href="{% url 'database_connections' %}">
+                            <i class="fas fa-database me-1"></i> Conexões DB
+                        </a>
+                    </li>
+                    
+                    <!-- User Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle me-1"></i> {{ user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'profile' %}">
+                                    <i class="fas fa-user-edit me-1"></i> Meu Perfil
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'logout' %}">
+                                    <i class="fas fa-sign-out-alt me-1"></i> Sair
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'login' %}active{% endif %}" href="{% url 'login' %}">
+                            <i class="fas fa-sign-in-alt me-1"></i> Entrar
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'register' %}active{% endif %}" href="{% url 'register' %}">
+                            <i class="fas fa-user-plus me-1"></i> Cadastrar
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    <!-- API Status Indicator -->
+                    <li class="nav-item ms-2">
+                        <span class="nav-link" id="api-status-indicator">
+                            <span class="spinner-border spinner-border-sm text-light" role="status" aria-hidden="true"></span>
+                            <span class="visually-hidden">Verificando...</span>
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container-fluid mt-5 pt-3">
+        <div class="row">
+            <!-- Main content (now takes full width) -->
+            <main class="col-12 px-4 content-wrapper">
+                <!-- Messages -->
+                {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- Navigation Tabs - Only show for logged in users -->
+                {% if user.is_authenticated %}
+                <div class="workflow-tabs-container mb-4">
+                    <ul class="nav nav-tabs workflow-tabs" id="workflowTabs">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'home' or request.resolver_match.url_name == 'upload' %}active{% endif %}" 
+                               href="{% url 'upload' %}">
+                                <div class="tab-icon"><i class="fas fa-upload"></i></div>
+                                <div class="tab-label">1. Upload de Dados</div>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'data_treatment' %}active{% endif %} 
+                                             {% if not request.session.upload_id %}disabled{% endif %}" 
+                               href="{% if request.session.upload_id %}{% url 'data_treatment' request.session.upload_id %}{% else %}#{% endif %}">
+                                <div class="tab-icon"><i class="fas fa-magic"></i></div>
+                                <div class="tab-label">2. Tratamento</div>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'define_variables' %}active{% endif %} 
+                                             {% if not request.session.upload_id %}disabled{% endif %}" 
+                               href="{% if request.session.upload_id %}{% url 'define_variables' request.session.upload_id %}{% else %}#{% endif %}">
+                                <div class="tab-icon"><i class="fas fa-sliders-h"></i></div>
+                                <div class="tab-label">3. Definir Variáveis</div>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'recommendations' %}active{% endif %} 
+                                             {% if not request.session.upload_id %}disabled{% endif %}" 
+                               href="{% if request.session.upload_id %}{% url 'recommendations' request.session.upload_id %}{% else %}#{% endif %}">
+                                <div class="tab-icon"><i class="fas fa-lightbulb"></i></div>
+                                <div class="tab-label">4. Recomendações</div>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'execute' %}active{% endif %} 
+                                             {% if not request.session.upload_id %}disabled{% endif %}" 
+                               href="{% if request.session.upload_id %}{% url 'execute' request.session.upload_id %}{% else %}#{% endif %}">
+                                <div class="tab-icon"><i class="fas fa-play"></i></div>
+                                <div class="tab-label">5. Executar Análises</div>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'results' %}active{% endif %} 
+                                             {% if not request.session.upload_id %}disabled{% endif %}" 
+                               href="{% if request.session.upload_id %}{% url 'results' request.session.upload_id %}{% else %}#{% endif %}">
+                                <div class="tab-icon"><i class="fas fa-chart-bar"></i></div>
+                                <div class="tab-label">6. Resultados</div>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                {% endif %}
+                
+                <!-- Content -->
+                <div class="mb-4">
+                    <h1 class="main-header">{% block header %}ChatSmart{% endblock %}</h1>
+                </div>
+                
+                {% block content %}{% endblock %}
+                
+                <!-- Footer -->
+                <footer class="mt-5 py-3">
+                    <div class="text-center text-muted">
+                        Agora você tem um aliado. Análises mais profundas, melhor tomada de decisão | ChatSmart
+                    </div>
+                </footer>
+            </main>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script src="{% static 'js/main.js' %}"></script>
+
+    <!-- API Status Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const apiIndicator = document.getElementById('api-status-indicator');
+            
+            // Check API status
+            fetch('/api/status/')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'connected') {
+                        apiIndicator.innerHTML = '<i class="fas fa-circle text-success me-1"></i> API Online';
+                    } else {
+                        apiIndicator.innerHTML = '<i class="fas fa-circle text-danger me-1"></i> API Offline';
+                    }
+                })
+                .catch(() => {
+                    apiIndicator.innerHTML = '<i class="fas fa-circle text-danger me-1"></i> API Offline';
+                });
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

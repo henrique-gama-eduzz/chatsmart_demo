@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Conexão de Banco de Dados - ChatSmart{% endblock %}
+
+{% block header %}Editar Conexão de Banco de Dados{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-edit"></i> Editar Conexão: {{ connection.name }}</h5>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="{{ form.name.id_for_label }}" class="form-label">Nome da Conexão</label>
+                    {{ form.name }}
+                    <div class="form-text">Um nome para identificar esta conexão</div>
+                    {% if form.name.errors %}
+                        <div class="text-danger">{{ form.name.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="{{ form.database_type.id_for_label }}" class="form-label">Tipo de Banco de Dados</label>
+                    {{ form.database_type }}
+                    {% if form.database_type.errors %}
+                        <div class="text-danger">{{ form.database_type.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="{{ form.host.id_for_label }}" class="form-label">Host</label>
+                    {{ form.host }}
+                    <div class="form-text">Endereço do servidor de banco de dados (ex: localhost, 127.0.0.1)</div>
+                    {% if form.host.errors %}
+                        <div class="text-danger">{{ form.host.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="{{ form.port.id_for_label }}" class="form-label">Porta</label>
+                    {{ form.port }}
+                    <div class="form-text">Porta do banco de dados (ex: 5432 para PostgreSQL)</div>
+                    {% if form.port.errors %}
+                        <div class="text-danger">{{ form.port.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label for="{{ form.database_name.id_for_label }}" class="form-label">Nome do Banco de Dados</label>
+                    {{ form.database_name }}
+                    <div class="form-text">Nome do banco de dados para conexão</div>
+                    {% if form.database_name.errors %}
+                        <div class="text-danger">{{ form.database_name.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-4">
+                    <label for="{{ form.username.id_for_label }}" class="form-label">Usuário</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                        <div class="text-danger">{{ form.username.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-4">
+                    <label for="{{ form.password.id_for_label }}" class="form-label">Senha</label>
+                    {{ form.password }}
+                    <div class="form-text">Deixe em branco para manter a senha atual</div>
+                    {% if form.password.errors %}
+                        <div class="text-danger">{{ form.password.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="{{ form.connection_string.id_for_label }}" class="form-label">String de Conexão (Opcional)</label>
+                {{ form.connection_string }}
+                <div class="form-text">Forneça uma string de conexão completa, se preferir. Isso substituirá as configurações individuais acima.</div>
+                {% if form.connection_string.errors %}
+                    <div class="text-danger">{{ form.connection_string.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="mb-3 form-check">
+                {{ form.ssl_enabled }}
+                <label class="form-check-label" for="{{ form.ssl_enabled.id_for_label }}">
+                    Usar SSL/TLS para conexão
+                </label>
+                {% if form.ssl_enabled.errors %}
+                    <div class="text-danger">{{ form.ssl_enabled.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'database_connections' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar para Conexões
+                </a>
+                <div>
+                    <button type="submit" name="test_connection" class="btn btn-outline-primary me-2">
+                        <i class="fas fa-vial"></i> Testar Conexão
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Salvar Alterações
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

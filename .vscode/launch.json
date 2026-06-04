@@ -1,0 +1,45 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "FastAPI Server",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/env/Scripts/uvicorn.exe",
+            "args": [
+                "api.main:app",
+                "--reload",
+                "--host", "127.0.0.1",
+                "--port", "8000"
+                
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "python": "${workspaceFolder}/env/Scripts/python",
+            "jinja": true,
+            "cwd": "${workspaceFolder}"
+
+        },
+        {
+            "name": "Django",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceRoot}/frontend/manage.py",
+            "args": [
+                "runserver",
+                "--no-color",
+                "8090"
+            ],
+            "django":true,
+            "debugOptions": [
+                "WaitOnAbnormalExit",
+                "WaitOnNormalExit",
+                "RedirectOutput",
+                "DjangoDebugging"
+            ]
+        }
+    ]
+}

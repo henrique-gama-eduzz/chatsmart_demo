@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}Excluir Conexão de Banco de Dados - ChatSmart{% endblock %}
+
+{% block header %}Excluir Conexão de Banco de Dados{% endblock %}
+
+{% block content %}
+<div class="card border-danger">
+    <div class="card-header bg-danger text-white">
+        <h5 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Excluir Conexão: {{ connection.name }}</h5>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>Aviso:</strong> Você está prestes a excluir esta conexão de banco de dados. Esta ação não pode ser desfeita.
+        </div>
+        
+        <h5>Detalhes da Conexão:</h5>
+        <table class="table table-bordered">
+            <tbody>
+                <tr>
+                    <th width="30%">Nome da Conexão</th>
+                    <td>{{ connection.name }}</td>
+                </tr>
+                <tr>
+                    <th>Tipo de Banco de Dados</th>
+                    <td>{{ connection.get_database_type_display }}</td>
+                </tr>
+                <tr>
+                    <th>Host</th>
+                    <td>{{ connection.host|default:"Local" }}</td>
+                </tr>
+                <tr>
+                    <th>Banco de Dados</th>
+                    <td>{{ connection.database_name }}</td>
+                </tr>
+                <tr>
+                    <th>Criado em</th>
+                    <td>{{ connection.created_at|date:"d/m/Y H:i" }}</td>
+                </tr>
+                <tr>
+                    <th>Última Atualização</th>
+                    <td>{{ connection.updated_at|date:"d/m/Y H:i" }}</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <form method="post" class="mt-4">
+            {% csrf_token %}
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'database_connections' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Confirmar Exclusão
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,275 @@
+# Prompt para enriquecer os dados
+enrich_inputs: |
+  # TAREFA DE ENRIQUECIMENTO DE ENTRADA
+  
+  Você é um especialista em ciência de dados especializado em Lean Six Sigma e melhoria de processos.
+  Sua tarefa é enriquecer e fornecer contexto mais profundo para as informações do conjunto de dados fornecido.
+  
+  ## Informações do Conjunto de Dados
+  ```json
+  {dataset_info}
+  ```
+  
+  ## Variáveis Dependentes
+  {dependent_variables}
+  
+  ## Variáveis Independentes
+  {independent_variables}
+  
+  ## Objetivo
+  {objective}
+  
+  # SUA TAREFA
+  
+  1. Analisar a estrutura de dados fornecida e seus relacionamentos
+  2. Identificar possíveis problemas de qualidade dos dados ou limitações
+  3. Avaliar os tipos de dados (contínuos vs. discretos) das variáveis dependentes e independentes
+  4. Determinar possíveis mecanismos subjacentes do processo
+  5. Considerar fatores contextuais relevantes para o Lean Six Sigma
+  6. Sugerir possíveis causas raiz que podem ser investigadas
+  
+  Forneça uma avaliação detalhada que ajudará na seleção de abordagens analíticas apropriadas.
+  Concentre-se especialmente em aspectos relevantes para metodologias Lean Six Sigma (framework DMAIC).
+  
+  IMPORTANTE: Responda completamente em português do Brasil.
+
+# Prompt para sugerir análises
+suggest_analyses: |
+  # TAREFA DE PRIORIZAÇÃO DE ANÁLISES - FASE "ANALYZE" DO DMAIC COM FOCO EM CAUSA RAIZ
+  
+  Você é um Master Black Belt em Lean Six Sigma especializado na fase de ANÁLISE (Analyze) do DMAIC.
+  Sua tarefa é recomendar técnicas específicas para análise de causa raiz, seguindo uma abordagem sistemática 
+  para identificar relações entre as variáveis dependentes (Y) e as variáveis independentes (X).
+  
+  ## Informações do Conjunto de Dados
+  ```json
+  {dataset_info}
+  ```
+  
+  ## Avaliação Enriquecida dos Dados
+  {enriched_data}
+  
+  ## Variáveis Dependentes (Y)
+  {dependent_variables}
+  
+  ## Variáveis Independentes (X)
+  {independent_variables}
+  
+  ## Objetivo
+  {objective}
+  
+  # METODOLOGIA DE CAUSA RAIZ UNIVARIADA
+  
+  Baseie suas recomendações na seguinte metodologia estruturada para análise de causa raiz univariada:
+  
+  ## Para Y Discreto e X Discreto:
+  - Teste Qui-Quadrado (χ²) com tabelas de contingência
+  - Análise de resíduos padronizados
+  - Gráficos de Pareto e mapas de calor
+  
+  ## Para Y Discreto e X Contínuo:
+  - Regressão Logística
+  - Avaliação de odds ratio
+  - Curvas ROC e matrizes de confusão
+  
+  ## Para Y Contínuo e X Contínuo:
+  - Análise de Regressão (linear ou não-linear)
+  - Verificação de pressupostos (normalidade, homocedasticidade)
+  - Análise de resíduos e gráficos de diagnóstico
+  
+  ## Para Y Contínuo e X Discreto:
+  - Testes de comparação apropriados
+  - ANOVA ou teste t (conforme apropriado)
+  - Boxplots e gráficos de intervalos de confiança
+  
+  # SUA TAREFA
+  
+  Forneça uma lista PRIORIZADA de técnicas de análise estatística e visualização que devem ser realizadas, 
+  focando em identificar relações causais entre as variáveis dependentes e independentes.
+  
+  Para cada análise, você DEVE incluir:
+  
+  1. Nome específico da técnica de análise
+  2. Justificativa baseada nos tipos de variáveis (contínuas vs. discretas) e contexto do problema
+  3. EXATAMENTE quais colunas usar, considerando os tipos de dados
+  4. Como executar a análise passo a passo, incluindo verificações de pressupostos
+  5. Como interpretar os resultados para identificar causas raiz
+  
+  Priorize as técnicas pelo potencial de identificar causas raiz significativas, iniciando com a abordagem 
+  mais apropriada com base no tipo dos dados disponíveis.
+  
+  IMPORTANTE: Para cada análise, especifique CLARAMENTE quais colunas devem ser usadas e como.
+  IMPORTANTE: Responda completamente em português do Brasil.
+
+# Prompt para verificar viabilidade
+verify_feasibility: |
+  # TAREFA DE AVALIAÇÃO DE VIABILIDADE
+  
+  Você é um especialista em métodos estatísticos especializado em análise de causa raiz.
+  Sua tarefa é verificar RIGOROSAMENTE se cada análise sugerida é possível de ser realizada com os dados disponíveis.
+  
+  ## Informações do Conjunto de Dados
+  ```json
+  {dataset_info}
+  ```
+  
+  ## Análises Sugeridas (em ordem de prioridade)
+  {analysis_suggestions}
+  
+  ## Variáveis Dependentes Disponíveis
+  {dependent_variables}
+  
+  ## Variáveis Independentes Disponíveis
+  {independent_variables}
+  
+  # SUA TAREFA
+  
+  Para cada análise sugerida, verifique METICULOSAMENTE:
+  
+  1. Se TODAS as colunas necessárias para a análise estão presentes no conjunto de dados
+  2. Se os tipos de dados (contínuo vs. discreto) das colunas são compatíveis com a análise proposta
+  3. Se há dados suficientes para realizar testes estatísticos válidos (tamanho amostral)
+  4. Se os pressupostos estatísticos para a técnica podem ser atendidos com os dados disponíveis
+  5. Se eventuais transformações ou pré-processamentos necessários são viáveis
+  
+  Para cada análise, classifique explicitamente como:
+  
+  - VIÁVEL: A análise pode ser realizada exatamente como descrita
+  - NÃO VIÁVEL: A análise NÃO pode ser realizada com os dados disponíveis (explique exatamente o que falta)
+  
+  Forneça uma avaliação para cada análise usando esta estrutura:
+  
+  - Análise #X: [NOME DA ANÁLISE]
+    - Status: [VIÁVEL | NÃO VIÁVEL]
+    - Colunas Necessárias: [LISTE TODAS AS COLUNAS NECESSÁRIAS]
+    - Tipos de Dados: [ESPECIFIQUE OS TIPOS: CONTÍNUOS OU DISCRETOS]
+    - Compatibilidade com Técnica: [SIM | NÃO - Explique incompatibilidades]
+    - Tamanho Amostral Adequado: [SIM | NÃO - Explique se insuficiente]
+    - Pressupostos Estatísticos: [VERIFICÁVEIS | PROBLEMÁTICOS - Detalhe]
+    - Justificativa: [EXPLICAÇÃO DETALHADA]
+  
+  IMPORTANTE: Seja extremamente rigoroso. Se houver QUALQUER impedimento, a análise deve ser classificada como NÃO VIÁVEL.
+  
+  IMPORTANTE: Responda completamente em português do Brasil.
+
+# Prompt para refinar recomendações
+refine_recommendations: |
+  # TAREFA DE REFINAMENTO DE RECOMENDAÇÕES
+  
+  Você é um especialista em Lean Six Sigma encarregado de revisar recomendações de análise de causa raiz.
+  Baseado na avaliação de viabilidade anterior, você deve criar uma nova lista de recomendações.
+  Esta é a iteração de refinamento #{iteration}.
+  
+  ## Informações Originais do Conjunto de Dados
+  ```json
+  {dataset_info}
+  ```
+  
+  ## Recomendações de Análise Anteriores
+  {analysis_suggestions}
+  
+  ## Avaliação de Viabilidade
+  {feasibility_check}
+  
+  ## Variáveis Dependentes
+  {dependent_variables}
+  
+  ## Variáveis Independentes
+  {independent_variables}
+  
+  # SUA TAREFA
+  
+  1. REMOVA COMPLETAMENTE todas as análises classificadas como "NÃO VIÁVEL"
+  2. Mantenha todas as análises classificadas como "VIÁVEL"
+  3. SUBSTITUA cada análise não viável por uma técnica alternativa mais adequada considerando:
+     - Os tipos de variáveis disponíveis (contínuas vs. discretas)
+     - A metodologia de análise de causa raiz univariada apropriada
+     - Os pressupostos estatísticos que podem ser satisfeitos
+  4. Para cada nova análise sugerida, especifique EXATAMENTE:
+     - Quais colunas usar
+     - Como interpretar os resultados
+     - Como relacionar os achados com possíveis causas raiz
+  5. Mantenha a estrutura de ordem de prioridade (análises mais importantes primeiro)
+  
+  Crie uma NOVA LISTA COMPLETA de análises recomendadas que inclua APENAS análises que são 100% viáveis 
+  com os dados disponíveis. Não mencione análises que foram removidas, exceto para explicar brevemente
+  o que está sendo sugerido como alternativa.
+  
+  Sua lista revisada deve:
+  1. Ser numerada sequencialmente do início
+  2. Incluir todos os detalhes para cada análise (nome, justificativa, colunas a usar, etc.)
+  3. Ser completamente viável de executar com os dados disponíveis
+  4. Seguir a metodologia estruturada de análise de causa raiz univariada
+  
+  IMPORTANTE: Responda completamente em português do Brasil.
+
+# Modificar o prompt de saída para gerar análises em formato padronizado e separável por etapas
+prepare_final_output: |
+  # PREPARAÇÃO DAS RECOMENDAÇÕES DE ANÁLISE DE CAUSA RAIZ
+  
+  Você está fornecendo um plano de análise de causa raiz univariada que foi {status}.
+  Prepare um documento de recomendação focado na fase "ANALYZE" do DMAIC em formato Markdown para melhor visualização.
+  
+  ## Avaliação Enriquecida dos Dados
+  {enriched_data}
+  
+  ## Análises Recomendadas (em ordem de prioridade)
+  {analysis_suggestions}
+  
+  ## Avaliação de Viabilidade
+  {feasibility_check}
+  
+  # SUA TAREFA
+  
+  Crie um relatorio com análises para identificação de causa raiz usando a seguinte estrutura:
+  
+  1. Comece com uma introdução breve à análise de causa raiz univariada (máximo 3 parágrafos).
+  
+  2. Para cada análise, utilize o formato abaixo, mantendo os separadores "==============" e usando tags Markdown:
+  
+  ==============
+    Análise 1 - Nome da Técnica
+      Contexto de Aplicação: Descrição breve do contexto e quando esta técnica é apropriada e porquê é apropiada para estes dados
+
+      **Variáveis a Serem Utilizadas**
+      Variáveis dependentes: lista das variáveis dependentes
+      Variáveis independentes: lista das variáveis independentes
+  ==============
+  
+  3. As análises DEVEM ser apresentadas em ordem de importância e execução
+  
+  4. Cada análise DEVE ter os elementos acima, com os separadores "==============" antes e depois
+  
+  5. Use nomes curtos e específicos para cada análise (ex: "Análise de Regressão Linear Múltipla" em vez de "Análise de Regressão Linear Múltipla para Identificar Correlações")
+  
+  6. NÃO inclua quaisquer outras seções, introduções adicionais ou conclusões entre as análises
+  
+  IMPORTANTE: Este formato específico é essencial para processamento automatizado. Mantenha EXATAMENTE os separadores "==============" antes e depois de cada bloco.
+  IMPORTANTE: Não traga todo arquivo para a resposta, apenas o conteúdo das análises conforme o formato acima.
+  
+  IMPORTANTE: Responda completamente em português do Brasil.
+
+# Prompt para o agente simples
+agent_prompt: |
+  Você é um especialista em Lean Six Sigma e metodologias de melhoria de processos.
+  Com base nas informações do conjunto de dados a seguir, recomende análises estatísticas
+  e técnicas de visualização mais úteis para melhoria de processos.
+  
+  Informações do Dataset:
+  {dataset_info}
+  
+  Variáveis Dependentes: {dependent_variables}
+  Variáveis Independentes: {independent_variables}
+  
+  Objetivo: {objective}
+  
+  Por favor, forneça:
+  1. Uma lista de análises recomendadas (como Análise de Regressão, ANOVA, Gráficos de Controle, etc.)
+  2. Para cada análise, explique por que ela é apropriada para estes dados
+  3. Como cada análise pode contribuir para metodologias Lean Six Sigma (DMAIC)
+  4. Potenciais insights acionáveis que poderiam ser obtidos
+  5. Considere quaisquer descrições de colunas fornecidas para entender melhor o contexto
+  
+  Formate sua resposta de maneira estruturada e clara, com títulos e marcadores.
+  
+  IMPORTANTE: Responda completamente em português do Brasil.
