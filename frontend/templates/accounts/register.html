@@ -1,93 +1,90 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Registro - ChatSmart{% endblock %}
-
-{% block header %}Criar uma nova conta{% endblock %}
+{% block title %}Cadastro - ChatSmart{% endblock %}
+{% block header %}{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8 col-lg-6">
-        <div class="card shadow">
-            <div class="card-body p-4">
-                <h4 class="card-title text-center mb-4">
-                    <i class="fas fa-user-plus me-2"></i>Criar Conta
-                </h4>
-                
-                <form method="post" novalidate>
-                    {% csrf_token %}
-                    
-                    {% if form.non_field_errors %}
-                    <div class="alert alert-danger">
-                        {% for error in form.non_field_errors %}
-                            {{ error }}
-                        {% endfor %}
+<div class="register-wrapper">
+
+    <!-- Painel de marca -->
+    <div class="register-brand-panel">
+        <div class="brand-logo">
+            <img src="{% static 'logo.png' %}" alt="ChatSmart">
+            <span>ChatSmart</span>
+        </div>
+        <h2>Comece sua jornada de melhoria contínua</h2>
+        <p>Crie sua conta e acesse análises estatísticas guiadas por IA para processos Lean Six Sigma.</p>
+    </div>
+
+    <!-- Painel do formulário -->
+    <div class="register-form-panel">
+        <h3>Criar conta</h3>
+        <p class="register-subtitle">Preencha os dados abaixo para começar</p>
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger py-2 small">
+                {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="mb-3">
+                <label for="{{ form.username.id_for_label }}" class="form-label fw-medium small">Nome de usuário</label>
+                {{ form.username }}
+                <div class="form-text">Letras, números e @/./+/-/_ apenas.</div>
+                {% if form.username.errors %}
+                <div class="text-danger small mt-1">
+                    {% for error in form.username.errors %}{{ error }}{% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label for="{{ form.email.id_for_label }}" class="form-label fw-medium small">Email</label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                <div class="text-danger small mt-1">
+                    {% for error in form.email.errors %}{{ error }}{% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.password1.id_for_label }}" class="form-label fw-medium small">Senha</label>
+                    {{ form.password1 }}
+                    {% if form.password1.errors %}
+                    <div class="text-danger small mt-1">
+                        {% for error in form.password1.errors %}{{ error }}{% endfor %}
                     </div>
                     {% endif %}
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.username.id_for_label }}" class="form-label">Nome de usuário</label>
-                        {{ form.username }}
-                        <div class="form-text">Letras, números e @/./+/-/_ apenas.</div>
-                        {% if form.username.errors %}
-                            <div class="text-danger">
-                                {% for error in form.username.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.password2.id_for_label }}" class="form-label fw-medium small">Confirmar senha</label>
+                    {{ form.password2 }}
+                    {% if form.password2.errors %}
+                    <div class="text-danger small mt-1">
+                        {% for error in form.password2.errors %}{{ error }}{% endfor %}
                     </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
-                        {{ form.email }}
-                        {% if form.email.errors %}
-                            <div class="text-danger">
-                                {% for error in form.email.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.password1.id_for_label }}" class="form-label">Senha</label>
-                        {{ form.password1 }}
-                        <div class="form-text">
-                            Sua senha deve conter pelo menos 8 caracteres e não pode ser muito comum.
-                        </div>
-                        {% if form.password1.errors %}
-                            <div class="text-danger">
-                                {% for error in form.password1.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.password2.id_for_label }}" class="form-label">Confirmar senha</label>
-                        {{ form.password2 }}
-                        {% if form.password2.errors %}
-                            <div class="text-danger">
-                                {% for error in form.password2.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="d-grid gap-2 mt-4">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-user-plus me-2"></i>Criar Conta
-                        </button>
-                    </div>
-                </form>
-                
-                <div class="mt-4 text-center">
-                    <p>Já tem uma conta? <a href="{% url 'login' %}">Entre aqui</a></p>
+                    {% endif %}
                 </div>
             </div>
-        </div>
+
+            <div class="d-grid mt-2">
+                <button type="submit" class="btn btn-primary btn-lg fw-semibold">
+                    Criar conta
+                </button>
+            </div>
+        </form>
+
+        <p class="text-center mt-4 mb-0 small text-muted">
+            Já tem uma conta?
+            <a href="{% url 'login' %}" class="text-decoration-none fw-semibold">Entre aqui</a>
+        </p>
     </div>
+
 </div>
 {% endblock %}

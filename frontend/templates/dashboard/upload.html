@@ -39,39 +39,42 @@
                         <h5 class="mb-0"><i class="fas fa-upload"></i> Carregar Arquivo</h5>
                     </div>
                     <div class="card-body">
-                        <form method="post" enctype="multipart/form-data">
+                        <form method="post" enctype="multipart/form-data" id="uploadForm">
                             {% csrf_token %}
-                            
+
                             <div class="mb-3">
-                                <label for="{{ form.project.id_for_label }}" class="form-label">
-                                    <strong>Selecione o Projeto</strong>
-                                </label>
+                                <label for="{{ form.project.id_for_label }}" class="form-label fw-medium small">Projeto</label>
                                 {{ form.project }}
                                 <div class="form-text">
-                                    Selecione o projeto para este dataset ou 
-                                    <a href="{% url 'project_create' %}" target="_blank">crie um novo projeto</a>.
+                                    Ou <a href="{% url 'project_create' %}" target="_blank">crie um novo projeto</a>.
                                 </div>
                                 {% if form.project.errors %}
-                                    <div class="text-danger">{{ form.project.errors }}</div>
+                                    <div class="text-danger small mt-1">{{ form.project.errors }}</div>
                                 {% endif %}
                             </div>
-                            
+
                             <div class="mb-3">
-                                <label for="{{ form.file.id_for_label }}" class="form-label">
-                                    <strong>Selecione um arquivo</strong>
-                                </label>
-                                {{ form.file }}
-                                {% if form.file.errors %}
-                                    <div class="text-danger">{{ form.file.errors }}</div>
-                                {% endif %}
-                                <div class="form-text">
-                                    Seu arquivo deve ter uma linha de cabeçalho e colunas bem definidas.
+                                <label class="form-label fw-medium small">Arquivo de dados</label>
+                                <div class="upload-drop-zone" id="dropZone">
+                                    {{ form.file }}
+                                    <div class="drop-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                                    <div class="drop-title">Arraste seu arquivo aqui</div>
+                                    <div class="drop-subtitle">ou clique para selecionar — CSV ou Excel (.xlsx / .xls)</div>
                                 </div>
+                                <div class="file-selected-info" id="fileInfo">
+                                    <i class="fas fa-file-alt file-icon"></i>
+                                    <span class="file-name" id="fileName"></span>
+                                    <span class="file-size" id="fileSize"></span>
+                                </div>
+                                {% if form.file.errors %}
+                                    <div class="text-danger small mt-1">{{ form.file.errors }}</div>
+                                {% endif %}
                             </div>
-                            
-                            <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-upload"></i> Carregar Arquivo
+
+                            <div class="d-grid mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg fw-semibold btn-has-spinner" id="uploadBtn">
+                                    <span class="btn-text"><i class="fas fa-upload me-2"></i>Carregar Arquivo</span>
+                                    <span class="btn-spinner spinner-border spinner-border-sm" role="status"></span>
                                 </button>
                             </div>
                         </form>
@@ -199,4 +202,67 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    var dropZone   = document.getElementById('dropZone');
+    var fileInput  = dropZone ? dropZone.querySelector('input[type="file"]') : null;
+    var fileInfo   = document.getElementById('fileInfo');
+    var fileName   = document.getElementById('fileName');
+    var fileSize   = document.getElementById('fileSize');
+    var uploadBtn  = document.getElementById('uploadBtn');
+    var uploadForm = document.getElementById('uploadForm');
+
+    function formatBytes(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / 1048576).toFixed(1) + ' MB';
+    }
+
+    function showFile(file) {
+        if (!file || !fileInfo) return;
+        fileName.textContent = file.name;
+        fileSize.textContent = formatBytes(file.size);
+        fileInfo.classList.add('show');
+    }
+
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) showFile(this.files[0]);
+        });
+    }
+
+    if (dropZone) {
+        dropZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('drag-over');
+        });
+        dropZone.addEventListener('dragleave', function() {
+            this.classList.remove('drag-over');
+        });
+        dropZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+            var files = e.dataTransfer.files;
+            if (files && files[0] && fileInput) {
+                try {
+                    var dt = new DataTransfer();
+                    dt.items.add(files[0]);
+                    fileInput.files = dt.files;
+                } catch(err) {}
+                showFile(files[0]);
+            }
+        });
+    }
+
+    if (uploadForm && uploadBtn) {
+        uploadForm.addEventListener('submit', function() {
+            uploadBtn.classList.add('loading');
+            uploadBtn.disabled = true;
+        });
+    }
+})();
+</script>
 {% endblock %}
