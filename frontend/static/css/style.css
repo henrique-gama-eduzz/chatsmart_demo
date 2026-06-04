@@ -1073,6 +1073,9 @@ body {
 
 [data-theme="dark"] body          { background-color: var(--color-surface); color: var(--color-text); }
 
+[data-theme="dark"] a             { color: #94A3B8; }
+[data-theme="dark"] a:hover       { color: #CBD5E1; }
+
 [data-theme="dark"] .cs-navbar {
   background: #1E293B !important;
   border-color: var(--color-border);
