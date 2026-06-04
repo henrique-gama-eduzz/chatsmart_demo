@@ -123,6 +123,9 @@ MEDIA_ROOT = os.environ.get('MEDIA_ROOT', os.path.join(BASE_DIR, 'media'))
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# CSRF
+CSRF_TRUSTED_ORIGINS = [f"https://{h}" for h in os.environ.get('ALLOWED_HOSTS', 'localhost').split(',') if h != 'healthcheck.railway.app']
+
 # Configurações da API
 API_URL = os.environ.get('API_URL', 'http://localhost:8000')
 
