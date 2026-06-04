@@ -1,6 +1,7 @@
 // Main JavaScript for ChatSmart application
 
 document.addEventListener('DOMContentLoaded', function() {
+    topLoader.init();
     updateDarkModeIcon(localStorage.getItem('theme') || 'light');
     initToasts();
     checkApiStatus();
@@ -9,6 +10,54 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeWorkflowTabs();
     clearStoredProgressData();
 });
+
+// ============================================================
+// TOP LOADING BAR
+// ============================================================
+var topLoader = {
+    el: null,
+    _timer: null,
+    _progress: 0,
+
+    init: function() {
+        this.el = document.getElementById('top-loader');
+    },
+
+    start: function() {
+        if (!this.el) return;
+        clearInterval(this._timer);
+        this._progress = 0;
+        this.el.style.width = '0%';
+        this.el.classList.remove('finishing');
+        this.el.classList.add('active');
+
+        var self = this;
+        this._timer = setInterval(function() {
+            // Easing: fast at first, slow as it approaches 85%
+            var remaining = 85 - self._progress;
+            self._progress += remaining * 0.12;
+            if (self._progress > 85) self._progress = 85;
+            self.el.style.width = self._progress + '%';
+        }, 350);
+    },
+
+    done: function() {
+        if (!this.el) return;
+        clearInterval(this._timer);
+        this.el.style.width = '100%';
+        var self = this;
+        setTimeout(function() {
+            self.el.classList.add('finishing');
+            setTimeout(function() {
+                self.el.classList.remove('active', 'finishing');
+                self.el.style.width = '0%';
+            }, 500);
+        }, 150);
+    }
+};
+
+// Expose globally so individual page scripts can use it
+window.topLoader = topLoader;
 
 // ============================================================
 // DARK MODE

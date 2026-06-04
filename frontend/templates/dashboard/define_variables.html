@@ -342,28 +342,31 @@
         const statusElement = document.getElementById('operationStatus');
         
         form.addEventListener('submit', function(e) {
-            // Verificar se há pelo menos uma variável dependente e uma independente selecionadas
             const depVars = document.getElementById('id_dependent_vars');
             const indepVars = document.getElementById('id_independent_vars');
-            
+
             if (depVars.selectedOptions.length === 0 || indepVars.selectedOptions.length === 0) {
                 e.preventDefault();
-                alert('Você precisa selecionar pelo menos uma variável dependente e uma independente.');
+                if (window.showToast) showToast('Selecione pelo menos uma variável dependente e uma independente.', 'warning');
                 return;
             }
-            
-            // Mostrar loader não bloqueante
+
+            // Desabilitar botão + iniciar top loader
             submitBtn.classList.add('loading');
-            statusElement.classList.add('visible');
-            
-            // Atualizar mensagem de tempo a cada segundo
+            submitBtn.disabled = true;
+            if (window.topLoader) topLoader.start();
+
+            // Atualizar texto de status (sem spinner - apenas texto)
             let seconds = 0;
+            if (statusElement) {
+                statusElement.querySelector('strong').textContent = 'Gerando recomendações com IA...';
+                statusElement.classList.add('visible');
+            }
             const timeInterval = setInterval(function() {
                 seconds++;
-                document.getElementById('operationTime').textContent = `Aguarde, processando (${seconds}s)...`;
+                const el = document.getElementById('operationTime');
+                if (el) el.textContent = seconds + 's — análise em andamento (pode levar até 2 min)';
             }, 1000);
-            
-            // Armazenar o intervalo no localStorage para poder limpar caso o usuário recarregue a página
             localStorage.setItem('processingTimeInterval', timeInterval);
         });
         

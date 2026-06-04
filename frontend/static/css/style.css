@@ -44,6 +44,63 @@
 }
 
 /* ============================================================
+   BOOTSTRAP BLUE — FULL OVERRIDE (remove all #0d6efd bleeding)
+   ============================================================ */
+
+/* Alerts */
+.alert-info {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid #6B7280;
+  color: var(--color-text);
+}
+.alert-primary {
+  background-color: var(--color-primary-light);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-primary);
+  color: var(--color-text);
+}
+
+/* Nav pills */
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link {
+  background-color: var(--color-primary) !important;
+  color: white !important;
+}
+.nav-pills .nav-link:not(.active):hover {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+}
+
+/* Form controls focus */
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 0.2rem rgba(30, 41, 59, 0.1);
+}
+.form-check-input:checked {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+/* Badges */
+.badge.bg-info  { background-color: #6B7280 !important; }
+.badge.bg-light { background-color: var(--color-surface) !important; color: var(--color-text) !important; }
+
+/* Misc */
+.text-info   { color: #6B7280 !important; }
+.border-info { border-color: #6B7280 !important; }
+.btn-info    { background-color: #6B7280; border-color: #6B7280; color: white; }
+.btn-info:hover { background-color: #4B5563; border-color: #4B5563; }
+
+/* Table striped */
+.table-striped > tbody > tr:nth-of-type(odd) > * {
+  background-color: var(--color-surface);
+}
+.table-primary { background-color: var(--color-primary-light) !important; }
+
+/* ============================================================
    BOOTSTRAP PRIMARY COLOR OVERRIDE
    ============================================================ */
 .btn-primary {
@@ -825,6 +882,53 @@ select[multiple]:focus {
    ============================================================ */
 body {
   transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* ============================================================
+   TOP LOADING BAR (NProgress-style)
+   ============================================================ */
+#top-loader {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  width: 0%;
+  height: 2px;
+  background: var(--color-primary);
+  z-index: 9998;
+  opacity: 0;
+  transition: width 0.25s ease-out;
+  pointer-events: none;
+}
+
+#top-loader.active {
+  opacity: 1;
+}
+
+#top-loader.finishing {
+  width: 100% !important;
+  transition: width 0.15s ease-out, opacity 0.3s ease 0.15s;
+  opacity: 0;
+}
+
+/* Operation status — text only, no spinner circle */
+.operation-status .spinner-border {
+  display: none !important;
+}
+
+.operation-status {
+  font-size: 0.8125rem;
+  padding: 0.625rem 1rem;
+}
+
+/* Fullscreen loader — lightweight version, no big spinner */
+.fullscreen-loader .spinner-border {
+  display: none !important;
+}
+
+.fullscreen-loader .loader-message:first-of-type {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text);
 }
 
 /* ============================================================
