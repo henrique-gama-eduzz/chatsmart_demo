@@ -128,7 +128,19 @@ async def recommend_analyses(request: AnalysisRequest):
         
         # Logging para depurar
         logger.info(f"Armazenadas {len(serializable_analyses)} análises no cache para o ID {request.upload_id}")
-        
+
+        if not serializable_analyses:
+            logger.error("Nenhuma análise extraída do texto de recomendações")
+            logger.error(f"Primeiros 500 chars do texto: {recommendations[:500]}")
+            return RecommendationResponse(
+                success=False,
+                message="Recomendações foram geradas mas nenhuma análise estruturada foi encontrada. Tente novamente — o modelo pode ter retornado em formato inesperado.",
+                recommendations=recommendations,
+                analyses=[],
+                processing_time=processing_time,
+                token_usage=token_stats
+            )
+
         return RecommendationResponse(
             success=True,
             message=f"Recomendações geradas com sucesso: {len(serializable_analyses)} análises",

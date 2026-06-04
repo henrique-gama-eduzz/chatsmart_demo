@@ -158,24 +158,68 @@ def extract_analyses(recommendations: str) -> List[Dict[str, Any]]:
                 except Exception as e:
                     logging.error(f"Erro ao extrair detalhes da análise no bloco {i+1}: {str(e)}")
         
-        # Se não encontramos nenhuma análise com o método padrão, tente método alternativo mais simples
+        # Método alternativo 1: blocos entre === que não tiveram título reconhecido
         if not analyses:
-            logging.warning("Método padrão não encontrou análises, tentando método alternativo")
-            # Encontre blocos que contenham a palavra "Análise" seguida de um número
+            logging.warning("Método padrão não encontrou análises, tentando blocos sem título padrão")
+            analysis_blocks2 = re.split(r'={3,}', recommendations)
+            seq = 0
+            for block in analysis_blocks2:
+                block = block.strip()
+                if not block:
+                    continue
+                lines = [l.strip() for l in block.split('\n') if l.strip()]
+                if len(lines) < 2:
+                    continue
+                seq += 1
+                first_line = re.sub(r'^#+\s*', '', lines[0])
+                first_line = re.sub(r'\*+', '', first_line).strip()[:80]
+                if not first_line:
+                    first_line = f"Análise {seq}"
+                dep_vars = []
+                indep_vars = []
+                dep_pat = [
+                    r'[Vv]ariáveis\s+dependentes:\s*([\w\s,]+?)(?=\n|$)',
+                    r'[Dd]ependentes?:\s*([\w\s,]+?)(?=\n|$)',
+                ]
+                indep_pat = [
+                    r'[Vv]ariáveis\s+independentes:\s*([\w\s,]+?)(?=\n|$)',
+                    r'[Ii]ndependentes?:\s*([\w\s,]+?)(?=\n|$)',
+                ]
+                for p in dep_pat:
+                    m = re.search(p, block, re.IGNORECASE)
+                    if m:
+                        dep_vars = [v.strip() for v in m.group(1).split(',') if v.strip() and len(v.strip()) < 30]
+                        break
+                for p in indep_pat:
+                    m = re.search(p, block, re.IGNORECASE)
+                    if m:
+                        indep_vars = [v.strip() for v in m.group(1).split(',') if v.strip() and len(v.strip()) < 30]
+                        break
+                analyses.append({
+                    "number": seq,
+                    "name": first_line,
+                    "dependent_vars": dep_vars,
+                    "independent_vars": indep_vars,
+                    "content": block,
+                    "status": "pending"
+                })
+                logging.info(f"Análise {seq} extraída de bloco sem título padrão: {first_line}")
+
+        # Método alternativo 2: busca por "Análise N" no texto
+        if not analyses:
+            logging.warning("Tentando método alternativo 2: busca por 'Análise N'")
             alt_matches = re.finditer(r'Análise\s*(\d+)[\s\-:]+([^\n]+)', recommendations)
-            
-            for i, match in enumerate(alt_matches):
+            for match in alt_matches:
                 analysis = {
                     "number": int(match.group(1)),
                     "name": match.group(2).strip(),
-                    "dependent_vars": [],  # Será atualizado pelo chamador
-                    "independent_vars": [], # Será atualizado pelo chamador
+                    "dependent_vars": [],
+                    "independent_vars": [],
                     "content": match.group(0),
-                    "context": match.group(2).strip(),
                     "status": "pending"
                 }
                 analyses.append(analysis)
-                logging.info(f"Análise {analysis['number']} extraída com método alternativo")
+                logging.info(f"Análise {analysis['number']} extraída com método alternativo 2")
     except Exception as e:
         logging.error(f"Erro ao extrair análises: {str(e)}")
         import traceback
