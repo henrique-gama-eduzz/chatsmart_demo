@@ -2,13 +2,13 @@
    DESIGN TOKENS
    ============================================================ */
 :root {
-  --color-primary:       #0D9488;
-  --color-primary-dark:  #0F766E;
-  --color-primary-light: #F0FDFA;
-  --color-primary-rgb:   13, 148, 136;
+  --color-primary:       #1E293B;
+  --color-primary-dark:  #0F172A;
+  --color-primary-light: #F8FAFC;
+  --color-primary-rgb:   30, 41, 59;
 
-  --color-accent:        #F97316;
-  --color-accent-dark:   #EA580C;
+  --color-accent:        #1E293B;
+  --color-accent-dark:   #0F172A;
 
   --color-success:       #059669;
   --color-success-light: #ECFDF5;
@@ -37,8 +37,8 @@
   --shadow-lg:  0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
 
   /* Bootstrap overrides */
-  --bs-primary:          #0D9488;
-  --bs-primary-rgb:      13, 148, 136;
+  --bs-primary:          #1E293B;
+  --bs-primary-rgb:      30, 41, 59;
   --bs-body-font-family: var(--font-family);
   --bs-body-color:       var(--color-text);
 }
@@ -441,7 +441,7 @@ select[multiple] option:checked {
 select[multiple]:focus {
   border-color: var(--color-primary);
   outline: 0;
-  box-shadow: 0 0 0 0.25rem rgba(13, 148, 136, 0.2);
+  box-shadow: 0 0 0 0.25rem rgba(30, 41, 59, 0.12);
 }
 
 /* ============================================================
@@ -692,7 +692,7 @@ select[multiple]:focus {
 
 .login-brand-panel {
   flex: 1;
-  background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 65%, #818CF8 100%);
+  background: linear-gradient(160deg, #0F172A 0%, #1E293B 60%, #334155 100%);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -952,7 +952,7 @@ body {
   --color-text:          #F1F5F9;
   --color-text-muted:    #94A3B8;
   --color-border:        #334155;
-  --color-primary-light: #134E4A;
+  --color-primary-light: #1E293B;
   --color-info-light:    #082F49;
   --color-success-light: #064E3B;
   --color-warning-light: #451A03;
@@ -972,7 +972,7 @@ body {
   color: var(--color-text-muted) !important;
 }
 [data-theme="dark"] .cs-navbar .navbar-brand span {
-  color: #2DD4BF !important;
+  color: #F1F5F9 !important;
 }
 [data-theme="dark"] .cs-navbar .nav-link:hover,
 [data-theme="dark"] .cs-navbar .nav-link.active {
@@ -1024,8 +1024,8 @@ body {
 }
 
 [data-theme="dark"] .accordion-button:not(.collapsed) {
-  background-color: var(--color-primary-light);
-  color: #2DD4BF;
+  background-color: rgba(255,255,255,0.05);
+  color: #F1F5F9;
 }
 
 [data-theme="dark"] .accordion-body { background-color: var(--color-white); }
@@ -1090,7 +1090,7 @@ body {
 [data-theme="dark"] .workflow-tabs .nav-link    { color: var(--color-text-muted); }
 [data-theme="dark"] .workflow-tabs .nav-link.active {
   background-color: var(--color-white);
-  color: #2DD4BF;
+  color: #94A3B8;
   border-color: var(--color-border);
 }
 
@@ -1260,7 +1260,7 @@ body {
 
 .register-brand-panel {
   flex: 0 0 320px;
-  background: linear-gradient(160deg, var(--color-primary-dark) 0%, var(--color-primary) 60%, #2DD4BF 100%);
+  background: linear-gradient(160deg, #0F172A 0%, #1E293B 60%, #334155 100%);
   display: flex;
   flex-direction: column;
   justify-content: center;
