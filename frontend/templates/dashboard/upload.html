@@ -187,16 +187,10 @@
                     </div>
                 {% endif %}
                 
-                <div class="d-flex justify-content-between mt-4">
-                    <div></div>
-                    <div>
-                        <a href="{% url 'database_connections' %}" class="btn btn-outline-primary">
-                            <i class="fas fa-cog"></i> Gerenciar Conexões
-                        </a>
-                        <a href="{% url 'add_database_connection' %}" class="btn btn-primary">
-                            <i class="fas fa-plus"></i> Nova Conexão
-                        </a>
-                    </div>
+                <div class="d-flex justify-content-end mt-4">
+                    <a href="{% url 'add_database_connection' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Nova Conexão
+                    </a>
                 </div>
             </div>
         </div>
