@@ -5,10 +5,6 @@
   --color-primary:       #1E293B;
   --color-primary-dark:  #0F172A;
   --color-primary-light: #F8FAFC;
-  --color-primary-rgb:   30, 41, 59;
-
-  --color-accent:        #1E293B;
-  --color-accent-dark:   #0F172A;
 
   --color-success:       #059669;
   --color-success-light: #ECFDF5;
@@ -24,7 +20,6 @@
   --color-border-strong: #E5E7EB;
   --color-text:          #111827;
   --color-text-muted:    #6B7280;
-  --color-text-subtle:   #9CA3AF;
   --color-white:         #FFFFFF;
 
   --font-display:        'Syne', sans-serif;
@@ -170,6 +165,7 @@ body {
   background-size: 24px 24px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* ============================================================
@@ -378,7 +374,6 @@ footer {
 
 .step-active {
   background-color: var(--color-primary-light);
-  border-left-color: var(--color-primary);
 }
 
 .step-pending {
@@ -391,7 +386,7 @@ footer {
 .workflow-tabs-container {
   margin-top: 0.75rem;
   overflow-x: auto;
-  padding-bottom: 0;
+  animation: fadeInUp 0.3s ease both;
 }
 
 .workflow-tabs {
@@ -449,7 +444,6 @@ footer {
   font-size: 0.8rem;
 }
 
-/* (api-status-indicator moved to dark-mode-toggle section) */
 
 /* ============================================================
    VARIABLE SELECTOR
@@ -631,7 +625,8 @@ select[multiple]:focus {
   right: 1.5rem;
   background: var(--color-white);
   border-radius: var(--radius-md);
-  padding: 1rem 1.25rem;
+  padding: 0.625rem 1rem;
+  font-size: 0.8125rem;
   box-shadow: var(--shadow-lg);
   z-index: 1040;
   max-width: 300px;
@@ -723,10 +718,6 @@ select[multiple]:focus {
 }
 
 /* Staggered grid reveals */
-.workflow-tabs-container {
-  animation: fadeInUp 0.3s ease both;
-}
-
 .content-wrapper > .row > [class*="col"] {
   animation: fadeInUp 0.38s ease both;
 }
@@ -942,12 +933,6 @@ select[multiple]:focus {
   .workflow-tabs .nav-link { min-width: 80px; }
 }
 
-/* ============================================================
-   BODY TRANSITION (dark mode)
-   ============================================================ */
-body {
-  transition: background-color 0.2s ease, color 0.2s ease;
-}
 
 /* ============================================================
    TOP LOADING BAR (NProgress-style)
@@ -984,11 +969,6 @@ body {
 /* Exception: chart.js spinner if ever needed (future-proof) */
 .chart-spinner .spinner-border {
   display: inline-block !important;
-}
-
-.operation-status {
-  font-size: 0.8125rem;
-  padding: 0.625rem 1rem;
 }
 
 .fullscreen-loader .loader-message:first-of-type {
@@ -1034,7 +1014,6 @@ body {
 .cs-toast-success   { border-left-color: var(--color-success); }
 .cs-toast-danger    { border-left-color: var(--color-danger); }
 .cs-toast-warning   { border-left-color: var(--color-warning); }
-.cs-toast-info      { border-left-color: var(--color-info); }
 
 .cs-toast-close {
   background: none;
@@ -1308,20 +1287,6 @@ body {
   color: var(--color-text);
 }
 
-/* ============================================================
-   ACCENT BUTTON (amber/orange CTAs)
-   ============================================================ */
-.btn-accent {
-  background-color: var(--color-accent);
-  border-color: var(--color-accent);
-  color: white;
-  font-weight: 600;
-}
-.btn-accent:hover, .btn-accent:focus, .btn-accent:active {
-  background-color: var(--color-accent-dark);
-  border-color: var(--color-accent-dark);
-  color: white;
-}
 
 /* ============================================================
    CARD HEADER — neutralize bg-primary, use clean white style
